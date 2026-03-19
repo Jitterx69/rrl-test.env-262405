@@ -4,6 +4,7 @@
 
 using Pkg; Pkg.activate(".")
 using Plots, StatsPlots, DataFrames, CSV, Measures, Statistics
+import PlotlyJS: PlotlyJS, attr, Layout
 
 const RESULTS_DIR = "experiments/results/processed"
 const PLOT_DIR = "experiments/plots"
@@ -91,26 +92,26 @@ end
 # ---------------------------------------------------------
 
 function plot_smooth_surfaces_3d()
-    plotly()
     for tier in [2, 3]
         path = joinpath(RESULTS_DIR, "tier$(tier)_exhaustive_full.csv")
         if isfile(path)
             df = CSV.read(path, DataFrame)
-            if "beta" in names(df) && "gamma" in names(df)
-                # We use mesh3d or interpolated surface for "High-Tech" feel
-                p = scatter3d(df.beta, df.gamma, df.avg_reward,
-                    marker_z=df.avg_reward,
-                    xlabel="Beta (β)", ylabel="Gamma (γ)", zlabel="Reward",
+            x_col = "alpha" in names(df) ? :alpha : :beta
+            y_col = "sigma_obs" in names(df) ? :sigma_obs : :gamma
+            
+            p = PlotlyJS.plot(
+                PlotlyJS.scatter3d(
+                    x=df[!, x_col], y=df[!, y_col], z=df.avg_reward,
+                    mode="markers",
+                    marker=attr(size=3, color=df.avg_reward, colorscale="Magma", opacity=0.8)
+                ),
+                Layout(
                     title="Interactive Reward Manifold: Tier $(tier)",
-                    color=:magma,
-                    markersize=3,
-                    opacity=0.8
+                    scene=attr(xaxis_title=String(x_col), yaxis_title=String(y_col), zaxis_title="Reward")
                 )
-                # Note: true surface interpolation requires a regular grid matrix in Plots.jl
-                # but scatter3d with Plotly backend allows free rotation/zoom as requested.
-                savefig(p, joinpath(PLOT_DIR, "tier$(tier)_interactive_manifold.html"))
-                println("Saved: tier$(tier)_interactive_manifold.html")
-            end
+            )
+            PlotlyJS.savefig(p, joinpath(PLOT_DIR, "tier$(tier)_interactive_manifold.html"))
+            println("Saved: tier$(tier)_interactive_manifold.html (Direct PlotlyJS)")
         end
     end
 end

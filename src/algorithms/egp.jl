@@ -27,33 +27,45 @@ function EGPAgent(o::ReflexiveOracle, p::GaussianPolicy, lr::Real; beta_stab=0.1
 end
 
 function EGPAgent(o::ReflexiveOracle, p::GaussianPolicy, lr_o::Real, lr_p::Real, b_stab::Real=0.1f0)
-    oso = Optimisers.setup(Optimisers.OptimiserChain(Optimisers.ClipGrad(1.0f0), Optimisers.Adam(lr_o)), o)
-    osp = Optimisers.setup(Optimisers.OptimiserChain(Optimisers.ClipGrad(1.0f0), Optimisers.Adam(lr_p)), p)
+    oso = Optimisers.setup(Optimisers.OptimiserChain(Optimisers.ClipGrad(1.0f0), Optimisers.Adam(lr_o)), o.model)
+    osp = Optimisers.setup(Optimisers.OptimiserChain(Optimisers.ClipGrad(1.0f0), Optimisers.Adam(lr_p)), p.mu_net)
     EGPAgent(o, p, oso, osp, b_stab)
 end
 
 function update_egp!(agent::EGPAgent, batch, env)
-    gs = Zygote.gradient(agent.oracle, agent.policy) do orc, pol
+    # 1. Update Oracle Internal Model
+    orc_m = agent.oracle.model
+    gs_o = Zygote.gradient(orc_m) do m
         l_total = 0.0
         for b in batch
             s_val = b[1]
-            rp_vec = orc(s_val)
-            # Support multidimensional state/prediction
-            mv, sv = pol(vcat(s_val, rp_vec))
-            as = tanh.(mv) .+ sv .* randn(Float32, length(mv)) .* 0.001f0
-            
-            # Dynamics approximation: Phi(s) = s + a - alpha * rho
-            sn = s_val .+ as .- Float32(env.alpha) .* rp_vec
-            l_total += -Interfaces.reward(env, sn, as) + agent.beta_stab * sum((sn .- s_val).^2)
+            rp_vec = m(s_val)
+            sn = s_val .+ b[2] .- Float32(env.alpha) .* rp_vec
+            l_total += agent.beta_stab * sum((sn .- s_val).^2)
         end
         return l_total / length(batch)
     end
     
-    if gs[1] !== nothing
-        agent.opt_state_oracle, agent.oracle = Optimisers.update!(agent.opt_state_oracle, agent.oracle, gs[1])
+    # 2. Update Policy Internal Models
+    pol_m = agent.policy.mu_net
+    gs_p = Zygote.gradient(pol_m) do m
+        l_total = 0.0
+        for b in batch
+            s_val = b[1]
+            rp_vec = agent.oracle(s_val)
+            mv = m(vcat(s_val, rp_vec))
+            as = mv 
+            sn = s_val .+ as .- Float32(env.alpha) .* rp_vec
+            l_total += -Interfaces.reward(env, sn, as)
+        end
+        return l_total / length(batch)
     end
-    if gs[2] !== nothing
-        agent.opt_state_policy, agent.policy = Optimisers.update!(agent.opt_state_policy, agent.policy, gs[2])
+    
+    if !isnothing(gs_o) && !isnothing(gs_o[1])
+        agent.opt_state_oracle, agent.oracle.model = Optimisers.update!(agent.opt_state_oracle, agent.oracle.model, gs_o[1])
+    end
+    if !isnothing(gs_p) && !isnothing(gs_p[1])
+        agent.opt_state_policy, agent.policy.mu_net = Optimisers.update!(agent.opt_state_policy, agent.policy.mu_net, gs_p[1])
     end
 end
 

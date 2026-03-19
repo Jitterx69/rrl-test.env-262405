@@ -12,7 +12,7 @@
 # Total: 30 seeds × 4 sigma × 3 alpha × 5 algos = 1800 runs
 # Combined with the existing 2880-run dataset, total Tier 3 data = 5040+ rows
 
-include("../src/ReflexiveRL.jl")
+include("../../src/ReflexiveRL.jl")
 using .ReflexiveRL
 using CSV, DataFrames, Statistics, Random, Dates, LinearAlgebra
 
@@ -99,7 +99,7 @@ function run_t3_all_algo(algo_type::String, sigma_obs::Float64, alpha::Float64, 
             for i in 1:length(batch)
                 batch[i] = (batch[i][1],batch[i][2],batch[i][3],batch[i][4],batch[i][5],Float32(rtns[i]))
             end
-            if algo_type == "EGP"; update_egp!(agent, batch)
+            if algo_type == "EGP"; update_egp!(agent, batch, env)
             elseif algo_type == "FPRL"
                 t3p(S,A,R) = 0.9f0 .* S .+ 0.5f0 .* A .- Float32(alpha) .* R
                 update_fprl!(agent, [b[1] for b in batch], t3p)

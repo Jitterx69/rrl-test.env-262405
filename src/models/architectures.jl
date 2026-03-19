@@ -6,7 +6,7 @@ using .SpectralUtils
 
 export ReflexiveOracle, GaussianPolicy, SpectralOracle, GatedSpectralOracle
 
-struct ReflexiveOracle
+mutable struct ReflexiveOracle
     model
 end
 Flux.@layer ReflexiveOracle
@@ -33,7 +33,7 @@ end
 A high-tech reflexive oracle using Fourier spectral layers.
 Captures global system dynamics in the frequency domain.
 """
-struct SpectralOracle
+mutable struct SpectralOracle
     model::Chain
 end
 
@@ -63,7 +63,7 @@ end
 State-of-the-art spectral oracle using Gated Fourier Units.
 Combines global spectral filtering with local spatial dense paths.
 """
-struct GatedSpectralOracle
+mutable struct GatedSpectralOracle
     model::Chain
 end
 
@@ -89,7 +89,7 @@ end
 # 5. Stochastic Policy (Gaussian)
 # =========================================================
 
-struct GaussianPolicy
+mutable struct GaussianPolicy
     mu_net
     log_sigma
 end

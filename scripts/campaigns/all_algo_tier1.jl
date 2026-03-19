@@ -11,7 +11,7 @@
 # Total: 50 seeds × 3 alpha × 5 algos = 750 runs
 # Combined with the previous 50-seed run, total Tier 1 data = 1800+ rows
 
-include("../src/ReflexiveRL.jl")
+include("../../src/ReflexiveRL.jl")
 using .ReflexiveRL
 using CSV, DataFrames, Statistics, Random, Dates
 
@@ -93,7 +93,7 @@ function run_t1_all_algo(algo_type::String, alpha::Float64, seed::Int)
                 batch[i] = (batch[i][1],batch[i][2],batch[i][3],batch[i][4],batch[i][5],Float32(rtns[i]))
             end
             if algo_type == "EGP"
-                update_egp!(agent, batch)
+                update_egp!(agent, batch, env)
             elseif algo_type == "FPRL"
                 t1_proxy(S,A,R) = S .+ A .- Float32(alpha) .* R
                 update_fprl!(agent, [b[1] for b in batch], t1_proxy)

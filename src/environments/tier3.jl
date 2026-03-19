@@ -22,9 +22,9 @@ function Interfaces.reset!(env::Tier3Env)
 end
 
 function Interfaces.step!(env::Tier3Env, action, r_pred)
-    # Multidimensional step logic
-    a_vec = action isa AbstractVector ? Float32.(action) : [Float32(action), Float32(action)]
-    rp_vec = r_pred isa AbstractVector ? Float32.(r_pred) : [Float32(r_pred), Float32(r_pred)]
+    # Multidimensional step logic - handle Matrix/Vector/Scalar
+    a_vec = action isa AbstractArray ? Float32.(vec(action)) : [Float32(action), Float32(action)]
+    rp_vec = r_pred isa AbstractArray ? Float32.(vec(r_pred)) : [Float32(r_pred), Float32(r_pred)]
     
     noise = env.noise_std .* randn(Float32, 2)
     new_s = env.state .+ a_vec .- env.alpha .* rp_vec .+ noise

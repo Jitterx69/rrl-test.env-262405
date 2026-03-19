@@ -97,10 +97,18 @@ for alpha in ALPHA_RANGE
     @printf("Tier %d | Alpha %.2f | Regime: %s (Std: %.3f)\n", TIER, alpha, regime, avg_traj_std)
 end
 
-# ---------------------------------------------------------
-# 3. Export
-# ---------------------------------------------------------
-
+# 3. Export & 3D Visualization
 mkpath("experiments/results/processed")
 CSV.write("experiments/results/processed/phase_transitions_tier$(TIER).csv", phase_results)
+
+println(">>> Generating 3D Phase Transition Manifold (HTML)...")
+using PlotlyJS
+p3d = PlotlyJS.plot(PlotlyJS.surface(x=phase_results.alpha, z=reshape(phase_results.entropy, :, 1), colorscale="Viridis"),
+                    Layout(title="Tier $(TIER) Phase Transition Manifold (3D)",
+                           scene=attr(xaxis_title="Alpha (α)", 
+                                      yaxis_title="Regime", 
+                                      zaxis_title="State Entropy (Std)")))
+PlotlyJS.savefig(p3d, "experiments/plots/tier$(TIER)_phase_transition_3d.html")
+
 println("Analysis complete. Results exported to experiments/results/processed/phase_transitions_tier$(TIER).csv")
+println("3D Manifold: experiments/plots/tier$(TIER)_phase_transition_3d.html")

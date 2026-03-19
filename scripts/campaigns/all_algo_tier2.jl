@@ -13,7 +13,7 @@
 # NOTE: SAC and ICRL are single-agent; they decide for all agents equally.
 # MADDPG/QMIX (true centralized multi-agent) are out of scope of this framework.
 
-include("../src/ReflexiveRL.jl")
+include("../../src/ReflexiveRL.jl")
 using .ReflexiveRL
 using CSV, DataFrames, Statistics, Random, Dates
 
@@ -104,7 +104,7 @@ function run_t2_all_algo(algo_type::String, n_agents::Int, seed::Int)
             for i in 1:length(batch)
                 batch[i] = (batch[i][1],batch[i][2],batch[i][3],batch[i][4],batch[i][5],Float32(rtns[i]))
             end
-            if algo_type == "EGP"; update_egp!(agent, batch)
+            if algo_type == "EGP"; update_egp!(agent, batch, env)
             elseif algo_type == "FPRL"
                 t2p(S,A,R) = S .- (Float32(n_agents) .* A) .+ Float32(BETA_CANON) .* S .* (1f0 .- S)
                 update_fprl!(agent, [b[1] for b in batch], t2p)

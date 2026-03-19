@@ -14,7 +14,7 @@
 # Total: 50 seeds × 3 N × 3 β × 3 γ × 3 algos = 1215 runs
 # (practically 1215 runs, each with 300 episodes × 200 steps)
 
-include("../src/ReflexiveRL.jl")
+include("../../src/ReflexiveRL.jl")
 using .ReflexiveRL
 using CSV, DataFrames, Statistics, Random, Dates
 
@@ -112,7 +112,7 @@ function run_t2_config(algo_type::String, n_agents::Int, β::Float64, γ::Float6
             for i in 1:length(batch)
                 batch[i] = (batch[i][1],batch[i][2],batch[i][3],batch[i][4],batch[i][5],Float32(rtns[i]))
             end
-            if algo_type == "EGP"; update_egp!(agent, batch)
+            if algo_type == "EGP"; update_egp!(agent, batch, env)
             elseif algo_type == "FPRL"
                 t2_proxy(S,A,R) = S .- (Float32(n_agents) .* A) .+ Float32(β) .* S .* (1f0 .- S)
                 update_fprl!(agent, [b[1] for b in batch], t2_proxy)

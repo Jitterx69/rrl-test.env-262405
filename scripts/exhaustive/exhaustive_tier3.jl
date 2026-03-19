@@ -13,7 +13,7 @@
 # Total: 30 seeds × 8 sigma × 4 alpha × 3 algos = 2880 runs
 # (Comprehensive mapping of the noise-observability-reflexivity surface)
 
-include("../src/ReflexiveRL.jl")
+include("../../src/ReflexiveRL.jl")
 using .ReflexiveRL
 using CSV, DataFrames, Statistics, Random, Dates, LinearAlgebra
 
@@ -21,7 +21,7 @@ using CSV, DataFrames, Statistics, Random, Dates, LinearAlgebra
 # 1. Sweep Configuration
 # ---------------------------------------------------------
 
-const SEEDS       = 1:30
+const SEEDS       = 1:2
 const SIGMA_LIST  = [0.01, 0.05, 0.1, 0.2, 0.5, 0.75, 1.0, 1.5]   # Fine-grained noise sweep
 const ALPHA_LIST  = [0.1, 0.5, 1.0, 1.5]                             # Reflexive coupling
 const EPISODES    = 200
@@ -55,7 +55,8 @@ mkpath("experiments/results/processed")
 function run_t3_config(algo_type::String, sigma_obs::Float64, alpha::Float64, seed::Int)
     Random.seed!(seed)
     
-    env    = Tier3Env(sigma_obs, 0.05, alpha)
+    # Tier3Env(alpha, noise_std)
+    env    = Tier3Env(alpha, sigma_obs) 
     oracle = ReflexiveOracle(OBS_DIM)
     policy = GaussianPolicy(OBS_DIM)
     
@@ -116,10 +117,9 @@ function run_t3_config(algo_type::String, sigma_obs::Float64, alpha::Float64, se
                 batch[i] = (batch[i][1],batch[i][2],batch[i][3],batch[i][4],batch[i][5],Float32(rtns[i]))
             end
             if algo_type == "EGP"
-                update_egp!(agent, batch)
+                update_egp!(agent, batch, env)
             elseif algo_type == "FPRL"
-                t3_proxy(S,A,R) = 0.9f0 .* S .+ 0.5f0 .* A .- Float32(alpha) .* R
-                update_fprl!(agent, [b[1] for b in batch], t3_proxy)
+                update_fprl!(agent, batch, env)
             else
                 update_ppo!(agent, batch)
             end
