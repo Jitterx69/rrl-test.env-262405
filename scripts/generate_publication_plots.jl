@@ -1,4 +1,4 @@
-# Publication Plot Generation Script (Hybrid Backends)
+# Publication Plot Generation Script (Comprehensive Research Suite)
 # GR for 2D Vector (SVG) | Plotly for 3D Interactive (HTML)
 
 using Pkg; Pkg.activate(".")
@@ -8,14 +8,14 @@ const RESULTS_DIR = "experiments/results/processed"
 const PLOT_DIR = "experiments/plots"
 mkpath(PLOT_DIR)
 
-println(">>> Generating Publication Plots Library (Hybrid Backends)...")
+println(">>> Generating Comprehensive Publication Plots Library...")
 
 # ---------------------------------------------------------
-# 1. Ablation Study Plots (Vector SVG via GR)
+# 1. Ablation & Single-Tier 2D Plots (SVG via GR)
 # ---------------------------------------------------------
 
 function plot_ablation(tier)
-    gr() # Force GR for vector support
+    gr()
     path = joinpath(RESULTS_DIR, tier == 1 ? "ablation_study.csv" : "ablation_study_tier$(tier).csv")
     if isfile(path)
         df = CSV.read(path, DataFrame)
@@ -29,41 +29,42 @@ function plot_ablation(tier)
         )
         summary = combine(groupby(df, :condition), :reward => mean => :m, :reward => std => :s)
         @df summary bar!(:condition, :m, yerr=:s, alpha=0.3, color=:grey, label="Mean ± Std")
-        
         savefig(p, joinpath(PLOT_DIR, "tier$(tier)_ablation.svg"))
-        println("Saved: tier$(tier)_ablation.svg (GR)")
+        println("Saved: tier$(tier)_ablation.svg")
     end
 end
 
 # ---------------------------------------------------------
-# 2. Phase Transition Plots (2D SVG via GR)
+# 2. Benchmarking Plots (2D SVG)
 # ---------------------------------------------------------
 
-function plot_phase_transitions_2d(tier)
-    gr() # Force GR
-    path = joinpath(RESULTS_DIR, tier == 1 ? "phase_transitions.csv" : "phase_transitions_tier$(tier).csv")
-    if isfile(path)
-        df = CSV.read(path, DataFrame)
-        p = plot(df.alpha, df.entropy, 
-            xlabel="Coupling Strength (α)", ylabel="Trajectory Std",
-            title="Stability Bifurcation: Tier $(tier)", lw=2, color=:blue, label="Empirical Variance"
-        )
-        colors = Dict("Convergent" => :green, "Oscillatory" => :orange, "Divergent" => :red)
-        for r in unique(df.regime)
-            sub = filter(row -> row.regime == r, df)
-            scatter!(sub.alpha, sub.entropy, label=r, color=get(colors, r, :grey), markersize=4)
+function plot_algorithm_benchmarks()
+    gr()
+    for tier in [1, 2, 3]
+        path = joinpath(RESULTS_DIR, "tier$(tier)_all_algo_summary.csv")
+        if isfile(path)
+            df = CSV.read(path, DataFrame)
+            # Plot at max alpha or average
+            p = @df df groupedbar(:algo, :reward_mean, 
+                group=:algo,
+                ylabel="Mean Reward",
+                title="Performance Benchmark: Tier $(tier)",
+                yerr=:reward_std,
+                legend=false,
+                color=:auto
+            )
+            savefig(p, joinpath(PLOT_DIR, "tier$(tier)_algo_benchmark.svg"))
+            println("Saved: tier$(tier)_algo_benchmark.svg")
         end
-        savefig(p, joinpath(PLOT_DIR, "tier$(tier)_phase_transition_2d.svg"))
-        println("Saved: tier$(tier)_phase_transition_2d.svg (GR)")
     end
 end
 
 # ---------------------------------------------------------
-# 3. 3D Interactive Plots (HTML via Plotly)
+# 3. 3D Manifolds & Interactive Surfaces (HTML via Plotly)
 # ---------------------------------------------------------
 
 function plot_stability_manifold_3d()
-    plotly() # Switch to Plotly for interactivity
+    plotly()
     p1 = joinpath(RESULTS_DIR, "phase_transitions.csv")
     p3 = joinpath(RESULTS_DIR, "phase_transitions_tier3.csv")
     
@@ -76,18 +77,35 @@ function plot_stability_manifold_3d()
             marker_z=df.entropy,
             xlabel="Alpha (α)", ylabel="Env Complexity (Tier)", zlabel="Variance",
             title="3D Stability Manifold (Interactive)",
-            camera=(45, 30),
-            markersize=5,
             color=:turbo
         )
-        
         savefig(p, joinpath(PLOT_DIR, "stability_manifold_3d.html"))
-        println("Saved: stability_manifold_3d.html (Plotly)")
+        println("Saved: stability_manifold_3d.html")
+    end
+end
+
+function plot_exhaustive_surfaces_3d()
+    plotly()
+    for tier in [2, 3]
+        path = joinpath(RESULTS_DIR, "tier$(tier)_exhaustive_full.csv")
+        if isfile(path)
+            df = CSV.read(path, DataFrame)
+            if "beta" in names(df) && "gamma" in names(df)
+                p = scatter3d(df.beta, df.gamma, df.avg_reward,
+                    marker_z=df.avg_reward,
+                    xlabel="Beta (β)", ylabel="Gamma (γ)", zlabel="Reward",
+                    title="Exhaustive Param Space: Tier $(tier)",
+                    color=:magma
+                )
+                savefig(p, joinpath(PLOT_DIR, "tier$(tier)_exhaustive_surface.html"))
+                println("Saved: tier$(tier)_exhaustive_surface.html")
+            end
+        end
     end
 end
 
 function plot_sensitivity_surface_3d()
-    plotly() # Switch to Plotly
+    plotly()
     path = joinpath(RESULTS_DIR, "alpha_sensitivity_sweep.csv")
     if isfile(path)
         df = CSV.read(path, DataFrame)
@@ -99,15 +117,12 @@ function plot_sensitivity_surface_3d()
             marker_z=df.final_reward,
             xlabel="Alpha (α)", ylabel="Algorithm Index", zlabel="Final Reward",
             yticks=(1:length(algos), algos),
-            title="3D Sensitivity Surface (Interactive)",
-            camera=(30, 45),
+            title="Algorithm Sensitivity Landscape",
             color=:plasma,
-            markersize=4,
             label=""
         )
-        
         savefig(p, joinpath(PLOT_DIR, "sensitivity_surface_3d.html"))
-        println("Saved: sensitivity_surface_3d.html (Plotly)")
+        println("Saved: sensitivity_surface_3d.html")
     end
 end
 
@@ -115,11 +130,14 @@ end
 # Execute All
 # ---------------------------------------------------------
 
+# 2D Plots
 plot_ablation(1)
 plot_ablation(2)
-plot_phase_transitions_2d(1)
-plot_phase_transitions_2d(3)
+plot_algorithm_benchmarks()
+
+# 3D Plots
 plot_stability_manifold_3d()
+plot_exhaustive_surfaces_3d()
 plot_sensitivity_surface_3d()
 
-println(">>> Visualization Library Generation Complete in $PLOT_DIR")
+println(">>> Comprehensive Visualization Library Complete (SVG/HTML) in $PLOT_DIR")
