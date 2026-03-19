@@ -20,7 +20,7 @@ export Tier1Env, Tier2Env, Tier3Env
 # 3. Models & Architectures
 include("models/architectures.jl")
 using .Architectures
-export ReflexiveOracle, GaussianPolicy
+export ReflexiveOracle, GaussianPolicy, SpectralOracle
 
 # 4. Algorithms
 include("algorithms/egp.jl")

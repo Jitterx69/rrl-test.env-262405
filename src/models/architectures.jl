@@ -1,8 +1,10 @@
 module Architectures
 
 using Flux, Functors, Optimisers
+include("spectral_utils.jl")
+using .SpectralUtils
 
-export ReflexiveOracle, GaussianPolicy
+export ReflexiveOracle, GaussianPolicy, SpectralOracle
 
 struct ReflexiveOracle
     model
@@ -11,12 +13,42 @@ Flux.@layer ReflexiveOracle
 
 function ReflexiveOracle(in_dim::Int, out_dim::Int=1)
     m = Chain(Dense(in_dim, 64, relu), Dense(64, 64, relu), Dense(64, out_dim))
-    ReflexiveOracle(m)
+    return ReflexiveOracle(m)
 end
 
-function (o::ReflexiveOracle)(x)
-    return o.model(x)
+(m::ReflexiveOracle)(s) = m.model(s)
+
+# =========================================================
+# 3. Spectral Oracle (FNO-based for Discretization Invariance)
+# =========================================================
+
+"""
+    SpectralOracle(in_dim, out_dim, hidden_dim, modes)
+
+A high-tech reflexive oracle using Fourier spectral layers.
+Captures global system dynamics in the frequency domain.
+"""
+struct SpectralOracle
+    model::Chain
 end
+
+function SpectralOracle(in_dim::Int, out_dim::Int, hidden_dim::Int=64, modes::Int=16)
+    model = Chain(
+        Dense(in_dim, hidden_dim, relu),
+        # Treat the hidden features as a 1D signal for spectral filtering
+        SpectralLayer(hidden_dim, hidden_dim, modes),
+        Dense(hidden_dim, out_dim)
+    )
+    return SpectralOracle(model)
+end
+
+Flux.@functor SpectralOracle
+
+(m::SpectralOracle)(s) = m.model(s)
+
+# =========================================================
+# 4. Stochastic Policy (Gaussian)
+# =========================================================
 
 struct GaussianPolicy
     mu_net
