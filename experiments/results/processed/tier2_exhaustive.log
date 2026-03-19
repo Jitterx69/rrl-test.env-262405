@@ -1,0 +1,70 @@
+┌ Warning: The use of `Flux.@functor` is deprecated.
+│ Most likely, you should write `Flux.@layer MyLayer`which will add various convenience methods for your type,such as pretty-printing and use with Adapt.jl.
+│ However, this is not required. Flux.jl v0.15 uses Functors.jl v0.5,which makes exploration of most nested `struct`s opt-out instead of opt-in...so Flux will automatically see inside any custom struct definitions.
+│ If you really want to apply the `@functor` macro to a custom struct, use `Functors.@functor` instead.
+└ @ Flux ~/.julia/packages/Flux/DZYiO/src/deprecations.jl:101
+Total planned runs: 4050
+Starting Tier 2 Exhaustive Campaign (~1215 runs)...
+Progress: 90/4050 (2.2%) | Elapsed: 70317 milliseconds
+Progress: 180/4050 (4.4%) | Elapsed: 117423 milliseconds
+Progress: 270/4050 (6.7%) | Elapsed: 161606 milliseconds
+Progress: 360/4050 (8.9%) | Elapsed: 206940 milliseconds
+Progress: 450/4050 (11.1%) | Elapsed: 239533 milliseconds
+Progress: 540/4050 (13.3%) | Elapsed: 270186 milliseconds
+Progress: 630/4050 (15.6%) | Elapsed: 300641 milliseconds
+Progress: 720/4050 (17.8%) | Elapsed: 330895 milliseconds
+Progress: 810/4050 (20.0%) | Elapsed: 363371 milliseconds
+Progress: 900/4050 (22.2%) | Elapsed: 391488 milliseconds
+Progress: 990/4050 (24.4%) | Elapsed: 420177 milliseconds
+Progress: 1080/4050 (26.7%) | Elapsed: 448091 milliseconds
+Progress: 1170/4050 (28.9%) | Elapsed: 476233 milliseconds
+Progress: 1260/4050 (31.1%) | Elapsed: 504462 milliseconds
+Progress: 1350/4050 (33.3%) | Elapsed: 531482 milliseconds
+Progress: 1440/4050 (35.6%) | Elapsed: 559857 milliseconds
+Progress: 1530/4050 (37.8%) | Elapsed: 587900 milliseconds
+Progress: 1620/4050 (40.0%) | Elapsed: 616354 milliseconds
+Progress: 1710/4050 (42.2%) | Elapsed: 645084 milliseconds
+Progress: 1800/4050 (44.4%) | Elapsed: 673926 milliseconds
+Progress: 1890/4050 (46.7%) | Elapsed: 702855 milliseconds
+Progress: 1980/4050 (48.9%) | Elapsed: 731548 milliseconds
+Progress: 2070/4050 (51.1%) | Elapsed: 759519 milliseconds
+Progress: 2160/4050 (53.3%) | Elapsed: 787650 milliseconds
+Progress: 2250/4050 (55.6%) | Elapsed: 815381 milliseconds
+Progress: 2340/4050 (57.8%) | Elapsed: 843378 milliseconds
+Progress: 2430/4050 (60.0%) | Elapsed: 876153 milliseconds
+Progress: 2520/4050 (62.2%) | Elapsed: 921591 milliseconds
+Progress: 2610/4050 (64.4%) | Elapsed: 957827 milliseconds
+Progress: 2700/4050 (66.7%) | Elapsed: 990823 milliseconds
+Progress: 2790/4050 (68.9%) | Elapsed: 1022830 milliseconds
+Progress: 2880/4050 (71.1%) | Elapsed: 1052023 milliseconds
+Progress: 2970/4050 (73.3%) | Elapsed: 1081368 milliseconds
+Progress: 3060/4050 (75.6%) | Elapsed: 1110612 milliseconds
+Progress: 3150/4050 (77.8%) | Elapsed: 1139743 milliseconds
+Progress: 3240/4050 (80.0%) | Elapsed: 1168807 milliseconds
+Progress: 3330/4050 (82.2%) | Elapsed: 1198179 milliseconds
+Progress: 3420/4050 (84.4%) | Elapsed: 1227568 milliseconds
+Progress: 3510/4050 (86.7%) | Elapsed: 1256860 milliseconds
+Progress: 3600/4050 (88.9%) | Elapsed: 1286129 milliseconds
+Progress: 3690/4050 (91.1%) | Elapsed: 1315789 milliseconds
+Progress: 3780/4050 (93.3%) | Elapsed: 1345360 milliseconds
+Progress: 3870/4050 (95.6%) | Elapsed: 1376337 milliseconds
+Progress: 3960/4050 (97.8%) | Elapsed: 1406963 milliseconds
+Progress: 4050/4050 (100.0%) | Elapsed: 1556253 milliseconds
+
+--- TIER 2 EXHAUSTIVE SUMMARY ---
+9×6 DataFrame
+ Row │ n_agents  algo    reward_mean  reward_std  total_collapses  final_level_mean
+     │ Int64     String  Float64      Float64     Int64            Float64
+─────┼──────────────────────────────────────────────────────────────────────────────
+   1 │        3  PPO       -50.4573    27.6208               2477        0.972404
+   2 │        3  EGP       -50.4573    27.6208               2477        0.972404
+   3 │        3  FPRL       -5.11718    0.2618             135000        0.00496428
+   4 │        5  PPO       -46.4214    25.7631               1007        0.949025
+   5 │        5  EGP       -46.4214    25.7631               1007        0.949025
+   6 │        5  FPRL       -5.19194    0.202384           135000        0.00444805
+   7 │       10  PPO       -36.3099    21.9992               2865        0.900153
+   8 │       10  EGP       -36.3099    21.9992               2865        0.900153
+   9 │       10  FPRL       -5.20589    0.16603            135000        0.0014621
+
+Tier 2 Exhaustive Campaign Completed! Duration: 1653555 milliseconds
+Total runs: 4050

@@ -1,0 +1,31 @@
+% Section 10: Research Metrics Summary
+% E_stab: from stab_error column in per-tier CSVs
+% I_pred proxy: reward std dev across seeds (high std = high prediction influence)
+\begin{table}[h]
+\centering
+\caption{Research-specific metrics across all tiers. $I_{\text{pred}}$ is approximated by cross-seed reward variance (see Section 10.3).}
+\label{tab:metrics}
+\begin{tabular}{ll rr}
+\toprule
+Tier & Algorithm & Mean Reward & $I_{\text{pred}}$ (Var) \\
+\midrule
+Tier1 & PPO & -326.0 & 36.6 \\
+Tier1 & SAC & -400.5 & 28.7 \\
+Tier1 & EGP & -328.4 & 36.6 \\
+Tier1 & FPRL & -398.3 & 17.0 \\
+Tier1 & ICRL & -328.4 & 36.6 \\
+\midrule
+Tier2 & PPO & -38.9 & 4.7 \\
+Tier2 & SAC & -5.1 & 0.0 \\
+Tier2 & EGP & -38.9 & 4.7 \\
+Tier2 & FPRL & -5.1 & 0.0 \\
+Tier2 & ICRL & -38.9 & 4.7 \\
+\midrule
+Tier3 & PPO & -311.0 & 156.6 \\
+Tier3 & SAC & -405.1 & 145.4 \\
+Tier3 & EGP & -317.3 & 160.3 \\
+Tier3 & FPRL & -765.4 & 155.4 \\
+Tier3 & ICRL & -318.3 & 162.8 \\
+\bottomrule
+\end{tabular}
+\end{table}

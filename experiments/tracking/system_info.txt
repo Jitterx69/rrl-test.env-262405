@@ -1,0 +1,5 @@
+OS: macOS 14.x
+CPU: Apple M1 / Intel i7
+RAM: 16GB
+Julia Version: 1.10.x
+BLAS threads: 4
