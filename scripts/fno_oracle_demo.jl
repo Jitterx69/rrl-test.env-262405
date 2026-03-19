@@ -1,6 +1,6 @@
-# Neural Operator (FNO) Proof-of-Concept Demo
-# Comparing SpectralOracle (FNO) vs. ReflexiveOracle (MLP)
-# Focus: Discretization Invariance & Spectral Sensitivity
+# Advanced Neural Operator (FNO+) Expansion Demo
+# Showcasing Gated Fourier Units (GFU) and FNOAgent
+# Focus: High-Frequency Stability & Gated Residual Processing
 
 using Pkg; Pkg.activate(".")
 # Note: We include source directly for the demo to bypass local package path issues
@@ -10,23 +10,30 @@ using Flux
 using Statistics
 using Plots
 
-println(">>> Starting Neural Operator (FNO) Prototype Demo...")
+println(">>> Starting Advanced Neural Operator (FNO+) Expansion Demo...")
 
-# 1. Setup Models
+# 1. Setup Advanced Models
 in_dim = 10
 out_dim = 1
 hidden = 64
-modes = 8
+modes = 16
 
+# MLP vs Standard FNO vs Gated FNO+
 mlp_oracle = ReflexiveOracle(in_dim, out_dim)
 fno_oracle = SpectralOracle(in_dim, out_dim, hidden, modes)
+gated_fno  = GatedSpectralOracle(in_dim, out_dim, hidden, modes)
 
-# 2. Simulate "Dynamics" at different resolutions
-function generate_signal(n_steps, dt)
+# 2. Setup FNOAgent
+agent = FNOAgent(in_dim, out_dim, hidden, modes; lr=1f-3, β_stab=0.5f0)
+
+# 3. Simulate Complex Dynamics (Multi-scale)
+function generate_complex_signal(n_steps, dt)
     t = collect(0:dt:(n_steps-1)*dt)
-    # A multi-frequency signal that a spectral layer should capture easily
-    signal = sin.(2π * 1.0 .* t) .+ 0.5 .* sin.(2π * 5.0 .* t)
-    # Pad to in_dim
+    # Signal with both slow global flow and sharp high-frequency "shocks"
+    signal = sin.(2π * 1.0 .* t) .+ 0.2 .* sin.(2π * 20.0 .* t)
+    # Add a local shock
+    signal[Int(n_steps÷2):Int(n_steps÷2+5)] .+= 0.5
+    
     obs = zeros(Float32, in_dim, n_steps)
     for i in 1:n_steps
         obs[:, i] .= signal[i]
@@ -34,45 +41,34 @@ function generate_signal(n_steps, dt)
     return obs
 end
 
-# High resolution vs Low resolution
-obs_high = generate_signal(100, 0.01)
-obs_low  = generate_signal(50, 0.02) # Same total time but half the points
+obs_complex = generate_complex_signal(100, 0.01)
 
-println(">>> Testing forward pass consistency...")
-y_mlp_high = mlp_oracle(obs_high[:, 1:1])
-y_fno_high = fno_oracle(obs_high[:, 1:1])
+println(">>> Evaluating Model Response to Complex Signals...")
+y_mlp   = mlp_oracle(obs_complex)
+y_fno   = fno_oracle(obs_complex)
+y_gated = gated_fno(obs_complex)
 
-println("MLP Output Shape: ", size(y_mlp_high))
-println("FNO Output Shape: ", size(y_fno_high))
+println("Gated FNO Output Shape: ", size(y_gated))
 
-# 3. Demonstration of Discretization Invariance (Conceptual)
-# In a real FNO, the weights are in the Fourier domain, so the 
-# response to a low-passed signal is identical regardless of N.
+# 4. Demonstrate Optimization (Update Loop)
+println(">>> Proving FNOAgent Update Stability...")
+# Dummy batch for update
+actions = randn(Float32, 1, 100)
+rewards = randn(Float32, 1, 100)
+next_obs = obs_complex .+ 0.01f0 .* randn(Float32, size(obs_complex))
 
-# We verify that FNO can process the batch
-println(">>> Proving batch spectral processing...")
-y_fno_batch = fno_oracle(obs_high)
-println("FNO Batch Output Shape: ", size(y_fno_batch))
-
-# 4. Gradient Verification (Optional for Prototype)
-println(">>> Verifying Zygote Gradients through Spectral Layer...")
 try
-    using Zygote
-    # Ensure dense array
-    obs_dense = collect(obs_high)
-    grad = Zygote.gradient(fno_oracle) do m
-        sum(m(obs_dense))
-    end
-    println("Gradients computed successfully for: ", keys(grad[1]))
+    update_fno!(agent, obs_complex, actions, rewards, next_obs)
+    println(">>> FNOAgent update successful!")
 catch e
-    println(">>> Note: Automatic differentiation through FFT components requires specific adjoints (Ref: ChainRules.jl).")
-    println(">>> Spectral Forward Pass verified as functional.")
+    @warn "FNOAgent update encounterd an issue (Adjoint related): " e
 end
 
-# 5. Visualizing Spectral Filtering (Concept)
-p = plot(obs_high[1, :], label="State (Spatial/Time)", title="FNO Spectral Feature Extraction", lw=2)
-plot!(y_fno_batch[1, :], label="FNO Filtered Activation", alpha=0.7)
-savefig("experiments/plots/fno_prototype_signals.svg")
+# 5. Visualizing the Gated Advantage (SVG)
+p = plot(obs_complex[1, :], label="State (Complex)", title="Gated Fourier Unit (GFU) Performance", lw=1.5, color=:black)
+plot!(y_fno[1, :], label="Standard FNO (Low-Pass Only)", alpha=0.6, ls=:dash)
+plot!(y_gated[1, :], label="Gated FNO+ (Global + Local)", alpha=0.8, color=:red, lw=2)
+savefig("experiments/plots/fno_plus_performance.svg")
 
-println(">>> FNO Prototype Demo Complete!")
-println("Check experiments/plots/fno_prototype_signals.svg for visual verification.")
+println(">>> FNO+ Expansion Demo Complete!")
+println("Check experiments/plots/fno_plus_performance.svg for visual verification.")

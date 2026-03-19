@@ -20,7 +20,7 @@ export Tier1Env, Tier2Env, Tier3Env
 # 3. Models & Architectures
 include("models/architectures.jl")
 using .Architectures
-export ReflexiveOracle, GaussianPolicy, SpectralOracle
+export ReflexiveOracle, GaussianPolicy, SpectralOracle, GatedSpectralOracle
 
 # 4. Algorithms
 include("algorithms/egp.jl")
@@ -33,12 +33,15 @@ include("algorithms/sac.jl")
 using .SAC
 include("algorithms/icrl.jl")
 using .ICRL
+include("algorithms/fno.jl")
+using .FNO
 
 export EGPAgent, update_egp!
 export FPRLAgent, update_fprl!
 export PPOAgent, update_ppo!
 export SACAgent, update_sac!
 export ICRLAgent, update_icrl!
+export FNOAgent, update_fno!
 
 # 5. Training Engine
 include("training/Trainer.jl")

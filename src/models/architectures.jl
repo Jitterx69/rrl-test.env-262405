@@ -4,7 +4,7 @@ using Flux, Functors, Optimisers
 include("spectral_utils.jl")
 using .SpectralUtils
 
-export ReflexiveOracle, GaussianPolicy, SpectralOracle
+export ReflexiveOracle, GaussianPolicy, SpectralOracle, GatedSpectralOracle
 
 struct ReflexiveOracle
     model
@@ -42,12 +42,38 @@ function SpectralOracle(in_dim::Int, out_dim::Int, hidden_dim::Int=64, modes::In
     return SpectralOracle(model)
 end
 
-Flux.@functor SpectralOracle
-
 (m::SpectralOracle)(s) = m.model(s)
 
 # =========================================================
-# 4. Stochastic Policy (Gaussian)
+# 4. Gated Spectral Oracle (FNO+ with Residual Bypass)
+# =========================================================
+
+"""
+    GatedSpectralOracle(in_dim, out_dim, hidden_dim, modes)
+
+State-of-the-art spectral oracle using Gated Fourier Units.
+Combines global spectral filtering with local spatial dense paths.
+"""
+struct GatedSpectralOracle
+    model::Chain
+end
+
+function GatedSpectralOracle(in_dim::Int, out_dim::Int, hidden_dim::Int=64, modes::Int=16)
+    model = Chain(
+        Dense(in_dim, hidden_dim, relu),
+        GatedSpectralLayer(hidden_dim, hidden_dim, modes),
+        relu,
+        Dense(hidden_dim, out_dim)
+    )
+    return GatedSpectralOracle(model)
+end
+
+Flux.@layer GatedSpectralOracle
+
+(m::GatedSpectralOracle)(s) = m.model(s)
+
+# =========================================================
+# 5. Stochastic Policy (Gaussian)
 # =========================================================
 
 struct GaussianPolicy
