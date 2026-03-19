@@ -17,9 +17,10 @@ function ReflexiveOracle(in_dim::Int, out_dim::Int=1)
 end
 
 function (o::ReflexiveOracle)(x)
-    # Ensure x is an array for Flux layers
     x_input = x isa Number ? [Float32(x)] : x
-    return o.model(x_input)
+    # Ensure 2D for consistent Flux/Spectral behavior
+    x_2d = reshape(x_input, :, 1) # Reshape to (dim, 1) if vector or scalar
+    return o.model(x_2d)
 end
 
 # =========================================================
@@ -48,7 +49,8 @@ end
 
 function (m::SpectralOracle)(x)
     x_input = x isa Number ? [Float32(x)] : x
-    return m.model(x_input)
+    x_2d = reshape(x_input, :, size(x_input, 2))
+    return m.model(x_2d)
 end
 
 # =========================================================
@@ -79,7 +81,8 @@ Flux.@layer GatedSpectralOracle
 
 function (m::GatedSpectralOracle)(x)
     x_input = x isa Number ? [Float32(x)] : x
-    return m.model(x_input)
+    x_2d = reshape(x_input, :, size(x_input, 2))
+    return m.model(x_2d)
 end
 
 # =========================================================
@@ -100,7 +103,8 @@ end
 
 function (p::GaussianPolicy)(x)
     x_input = x isa Number ? [Float32(x)] : x
-    mv_out = p.mu_net(x_input)
+    x_2d = reshape(x_input, :, size(x_input, 2))
+    mv_out = p.mu_net(x_2d)
     # Clip log_sigma to prevent NaN in exp
     sv_out = exp.(clamp.(p.log_sigma, -5.0f0, 2.0f0))
     return mv_out, sv_out

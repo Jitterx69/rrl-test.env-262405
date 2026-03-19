@@ -22,9 +22,9 @@ function Interfaces.reset!(env::Tier1Env)
 end
 
 function Interfaces.step!(env::Tier1Env, action, r_pred)
-    # Handle both scalar and vector inputs for robustness
-    a_val = action isa AbstractVector ? Float32(action[1]) : Float32(action)
-    rp_val = r_pred isa AbstractVector ? Float32(r_pred[1]) : Float32(r_pred)
+    # Handle scalar, vector, or matrix inputs
+    a_val = action isa AbstractArray ? Float32(action[1]) : Float32(action)
+    rp_val = r_pred isa AbstractArray ? Float32(r_pred[1]) : Float32(r_pred)
     
     noise = env.noise_std * randn(Float32)
     next_s = env.state + a_val - env.alpha * rp_val + noise
@@ -33,7 +33,7 @@ function Interfaces.step!(env::Tier1Env, action, r_pred)
 end
 
 function Interfaces.reward(env::Tier1Env, state, action)
-    a_val = action isa AbstractVector ? Float32(action[1]) : Float32(action)
+    a_val = action isa AbstractArray ? Float32(action[1]) : Float32(action)
     return - sum((state .- env.target).^2) - 0.1f0 * sum(a_val.^2)
 end
 

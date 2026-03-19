@@ -14,6 +14,7 @@ export AbstractReflexiveEnv, AbstractReflexiveAgent
 export reset!, step!, reward, observe, compute_returns, compute_advantages
 export reflexive_consistency_error, feedback_sensitivity
 export QuadraticLyapunov, LyapunovDrift, ControlBarrier
+export NeuralLyapunov, CBFSafetyFilter
 
 # 2. Environment Tiers
 include("environments/base.jl")
@@ -40,6 +41,8 @@ include("algorithms/fno.jl")
 using .FNO
 include("algorithms/lac.jl")
 using .LAC
+include("algorithms/neural_lac.jl")
+using .NeuralLAC
 
 export EGPAgent, update_egp!
 export FPRLAgent, update_fprl!
@@ -48,6 +51,7 @@ export SACAgent, update_sac!
 export ICRLAgent, update_icrl!
 export FNOAgent, update_fno!
 export LACAgent, update_lac!
+export NeuralLACAgent, update_neural_lac!
 
 # 5. Training Engine
 include("training/Trainer.jl")

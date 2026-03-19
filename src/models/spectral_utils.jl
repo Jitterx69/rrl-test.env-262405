@@ -40,9 +40,10 @@ end
 
 Flux.@layer SpectralLayer
 
-function (m::SpectralLayer)(x::AbstractArray{Float32, 2})
-    # x shape: (features, batch)
-    x_dense = collect(x)
+function (m::SpectralLayer)(x::AbstractArray{Float32})
+    # Ensure 2D (features, batch)
+    x_2d = ndims(x) == 1 ? reshape(x, :, 1) : x
+    x_dense = collect(x_2d)
     x_ft = rfft(x_dense, 1) 
     
     # 2. Filter modes

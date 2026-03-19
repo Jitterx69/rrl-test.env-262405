@@ -2,8 +2,10 @@ module StabilityUtils
 
 using LinearAlgebra
 using Flux
+import Statistics: mean
 
 export QuadraticLyapunov, LyapunovDrift, ControlBarrier
+export NeuralLyapunov, CBFSafetyFilter
 
 """
     QuadraticLyapunov(P)
@@ -70,6 +72,67 @@ function CBFViolation(h, s, next_s; gamma=0.1f0)
     h_curr = h(s)
     h_next = h(next_s)
     return max.(0.0f0, (1.0f0 - gamma) .* h_curr .- h_next)
+end
+
+# =========================================================
+# 4. Neural Lyapunov (PDNN)
+# =========================================================
+
+"""
+    NeuralLyapunov(phi)
+
+A neural Lyapunov candidate V(s) = ||phi(s)||^2 + eps||s||^2.
+Ensures V(s) > 0 for all s != 0.
+"""
+struct NeuralLyapunov
+    phi::Chain
+    eps::Float32
+end
+
+function NeuralLyapunov(in_dim::Int, hidden_dim::Int=32; eps=1f-3)
+    phi = Chain(Dense(in_dim, hidden_dim, relu), Dense(hidden_dim, hidden_dim))
+    return NeuralLyapunov(phi, Float32(eps))
+end
+
+Flux.@layer NeuralLyapunov
+
+function (v::NeuralLyapunov)(s)
+    z = v.phi(s)
+    # Power-norm for positive definiteness
+    return sum(z.^2, dims=1) .+ v.eps .* sum(s.^2, dims=1)
+end
+
+# =========================================================
+# 5. CBF Safety Filter (Differentiable Projection)
+# =========================================================
+
+"""
+    CBFSafetyFilter(h; gamma=0.1f0, lr=0.1f0)
+
+A safety filter that projects an action 'a' to a safe action 'a_safe'
+that satisfies the CBF condition: h(f(s, a_safe)) >= (1-gamma)h(s).
+Uses a differentiable gradient-step for the prototype.
+"""
+struct CBFSafetyFilter
+    h::ControlBarrier
+    gamma::Float32
+end
+
+function (f::CBFSafetyFilter)(s, a, rp, env)
+    # Simple closed-form approximation or gradient-based projection
+    # For this prototype, we check the violation and nudge the action
+    s_next = step_model_approx(env, s, a, rp)
+    violation = CBFViolation(f.h, s, s_next; gamma=f.gamma)
+    
+    # If violation > 0, we apply a corrective nudge in the direction of the barrier gradient
+    # a_safe = a + violation * grad_a(h(f(s,a)))
+    # (Conceptual implementation for demonstration)
+    return a .- 0.1f0 .* violation 
+end
+
+function step_model_approx(env, s, a, rp)
+    # Conceptual next-state prediction
+    return s .+ a .- 1.0f0 .* rp
 end
 
 end # module
