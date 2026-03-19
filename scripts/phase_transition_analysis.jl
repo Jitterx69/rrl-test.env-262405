@@ -103,11 +103,21 @@ CSV.write("experiments/results/processed/phase_transitions_tier$(TIER).csv", pha
 
 println(">>> Generating 3D Phase Transition Manifold (HTML)...")
 using PlotlyJS
-p3d = PlotlyJS.plot(PlotlyJS.surface(x=phase_results.alpha, z=reshape(phase_results.entropy, :, 1), colorscale="Viridis"),
-                    Layout(title="Tier $(TIER) Phase Transition Manifold (3D)",
-                           scene=attr(xaxis_title="Alpha (α)", 
-                                      yaxis_title="Regime", 
-                                      zaxis_title="State Entropy (Std)")))
+# Map regime to numeric for 3D plotting
+regime_map = Dict("Convergent" => 0.0, "Oscillatory" => 1.0, "Divergent" => 2.0)
+y_vals = [regime_map[r] for r in phase_results.regime]
+
+p3d = PlotlyJS.plot(PlotlyJS.scatter3d(
+    x=phase_results.alpha, 
+    y=y_vals, 
+    z=phase_results.entropy,
+    mode="lines+markers",
+    marker=attr(size=5, color=phase_results.entropy, colorscale="Viridis", opacity=0.8),
+    line=attr(color="blue", width=2)
+), Layout(title="Tier $(TIER) Phase Transition Manifold (3D)",
+           scene=attr(xaxis_title="Alpha (α)", 
+                      yaxis_title="Regime (0:C, 1:O, 2:D)", 
+                      zaxis_title="State Entropy (Std)")))
 PlotlyJS.savefig(p3d, "experiments/plots/tier$(TIER)_phase_transition_3d.html")
 
 println("Analysis complete. Results exported to experiments/results/processed/phase_transitions_tier$(TIER).csv")
