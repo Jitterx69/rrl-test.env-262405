@@ -3,8 +3,8 @@ message: "If you use this software, please cite it as below."
 authors:
   - family-names: Ranjan
     given-names: Mohit
-    orcid: https://orcid.org/0000-0000-0000-0000
+    orcid: https://orcid.org/0009-0005-9879-7373
 title: "ReflexiveRL: A Research Framework for Endogenous and Reflexive Reinforcement Learning"
 version: 1.0.0
 date-released: 2026-03-19
-url: "https://github.com/jitterx/ReflexiveRL"
+url: "https://github.com/Jitterx69/rrl-test.env-262405"

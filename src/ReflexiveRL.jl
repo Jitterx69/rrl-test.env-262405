@@ -24,8 +24,11 @@ include("utils/mixed_precision.jl")
 using .MixedPrecision
 include("algorithms/hessian_free.jl")
 using .HessianFree
+include("utils/topology.jl")
+using .TopologicalAnalysis
 
 export randomized_jacobian_svd, apply_mixed!, HessianFreeOptimizer
+export compute_persistence_0d, estimate_topology_pressure
 
 # 2. Environment Tiers
 include("environments/base.jl")
