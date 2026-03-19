@@ -37,13 +37,21 @@ function SACAgent(state_dim::Int, out_dim::Int=1; lr=3e-4, initial_log_alpha=0.0
     return SACAgent(o, p, c1, c2, osp, osc, la, te)
 end
 
-# 2. Legacy/Flexible API
 function SACAgent(o::ReflexiveOracle, p::GaussianPolicy, c1, c2, lr::Real=3e-4; initial_log_alpha=0.0f0)
     osp = Optimisers.setup(Optimisers.OptimiserChain(Optimisers.ClipGrad(1.0f0), Optimisers.Adam(lr)), p)
     osc = Optimisers.setup(Optimisers.OptimiserChain(Optimisers.ClipGrad(1.0f0), Optimisers.Adam(lr)), (c1, c2))
     la = [Float32(initial_log_alpha)]
     te = -Float32(size(p.mu_net[end].weight, 1))
     return SACAgent(o, p, c1, c2, osp, osc, la, te)
+end
+
+function (a::SACAgent)(obs)
+    # 1. Oracle prediction
+    r_p = a.oracle(obs)
+    # 2. Policy action (mu + sigma * noise)
+    μ, σ = a.policy(vcat(collect(obs), collect(r_p)))
+    action = μ .+ σ .* randn(Float32, size(μ))
+    return action, r_p
 end
 
 function update_sac!(agent::SACAgent, batch)

@@ -16,7 +16,11 @@ function ReflexiveOracle(in_dim::Int, out_dim::Int=1)
     return ReflexiveOracle(m)
 end
 
-(m::ReflexiveOracle)(s) = m.model(s)
+function (o::ReflexiveOracle)(x)
+    # Ensure x is an array for Flux layers
+    x_input = x isa Number ? [Float32(x)] : x
+    return o.model(x_input)
+end
 
 # =========================================================
 # 3. Spectral Oracle (FNO-based for Discretization Invariance)
@@ -42,7 +46,10 @@ function SpectralOracle(in_dim::Int, out_dim::Int, hidden_dim::Int=64, modes::In
     return SpectralOracle(model)
 end
 
-(m::SpectralOracle)(s) = m.model(s)
+function (m::SpectralOracle)(x)
+    x_input = x isa Number ? [Float32(x)] : x
+    return m.model(x_input)
+end
 
 # =========================================================
 # 4. Gated Spectral Oracle (FNO+ with Residual Bypass)
@@ -70,7 +77,10 @@ end
 
 Flux.@layer GatedSpectralOracle
 
-(m::GatedSpectralOracle)(s) = m.model(s)
+function (m::GatedSpectralOracle)(x)
+    x_input = x isa Number ? [Float32(x)] : x
+    return m.model(x_input)
+end
 
 # =========================================================
 # 5. Stochastic Policy (Gaussian)
@@ -89,7 +99,8 @@ function GaussianPolicy(in_dim::Int, out_dim::Int=1)
 end
 
 function (p::GaussianPolicy)(x)
-    mv_out = p.mu_net(x)
+    x_input = x isa Number ? [Float32(x)] : x
+    mv_out = p.mu_net(x_input)
     # Clip log_sigma to prevent NaN in exp
     sv_out = exp.(clamp.(p.log_sigma, -5.0f0, 2.0f0))
     return mv_out, sv_out

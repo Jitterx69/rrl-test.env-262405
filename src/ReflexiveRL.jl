@@ -7,10 +7,13 @@ include("utils/MathUtils.jl")
 using .MathUtils
 include("utils/measurement_utils.jl")
 using .MeasurementUtils
+include("utils/stability_utils.jl")
+using .StabilityUtils
 
 export AbstractReflexiveEnv, AbstractReflexiveAgent
 export reset!, step!, reward, observe, compute_returns, compute_advantages
 export reflexive_consistency_error, feedback_sensitivity
+export QuadraticLyapunov, LyapunovDrift, ControlBarrier
 
 # 2. Environment Tiers
 include("environments/base.jl")
@@ -35,6 +38,8 @@ include("algorithms/icrl.jl")
 using .ICRL
 include("algorithms/fno.jl")
 using .FNO
+include("algorithms/lac.jl")
+using .LAC
 
 export EGPAgent, update_egp!
 export FPRLAgent, update_fprl!
@@ -42,6 +47,7 @@ export PPOAgent, update_ppo!
 export SACAgent, update_sac!
 export ICRLAgent, update_icrl!
 export FNOAgent, update_fno!
+export LACAgent, update_lac!
 
 # 5. Training Engine
 include("training/Trainer.jl")
