@@ -18,6 +18,14 @@ export reflexive_consistency_error, feedback_sensitivity
 export QuadraticLyapunov, LyapunovDrift, ControlBarrier
 export NeuralLyapunov, CBFSafetyFilter
 export fast_spectral_radius, batch_jvp
+include("utils/low_rank.jl")
+using .LowRank
+include("utils/mixed_precision.jl")
+using .MixedPrecision
+include("algorithms/hessian_free.jl")
+using .HessianFree
+
+export randomized_jacobian_svd, apply_mixed!, HessianFreeOptimizer
 
 # 2. Environment Tiers
 include("environments/base.jl")
