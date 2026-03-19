@@ -10,13 +10,20 @@ mutable struct FPRLAgent <: AbstractReflexiveAgent
     policy::GaussianPolicy
     opt_state
     lambda_fp::Float32
+    FPRLAgent(o, p, ost, l) = new(o, p, ost, Float32(l))
 end
 
+# 1. New API
 function FPRLAgent(state_dim::Int, out_dim::Int=1; lr=3e-4, lambda_fp=0.1f0)
     o = ReflexiveOracle(state_dim, out_dim)
     p = GaussianPolicy(state_dim + out_dim, out_dim)
-    ost = Optimisers.setup(Optimisers.Adam(lr), (o, p))
-    FPRLAgent(o, p, ost, Float32(lambda_fp))
+    return FPRLAgent(o, p, lr, lambda_fp)
+end
+
+# 2. Legacy API
+function FPRLAgent(o::ReflexiveOracle, p::GaussianPolicy, lr::Real=3e-4; lambda_fp=0.1f0)
+    ost = Optimisers.setup(Optimisers.OptimiserChain(Optimisers.ClipGrad(1.0f0), Optimisers.Adam(lr)), (o, p))
+    return FPRLAgent(o, p, ost, lambda_fp)
 end
 
 function update_fprl!(agent::FPRLAgent, batch, env)
@@ -34,9 +41,7 @@ function update_fprl!(agent::FPRLAgent, batch, env)
         (l_r + agent.lambda_fp * l_f) / length(batch)
     end
     if gs[1] !== nothing && gs[2] !== nothing
-        g1 = Optimisers.clip(gs[1], 1.0f0)
-        g2 = Optimisers.clip(gs[2], 1.0f0)
-        agent.opt_state, (agent.oracle, agent.policy) = Optimisers.update!(agent.opt_state, (agent.oracle, agent.policy), (g1, g2))
+        agent.opt_state, (agent.oracle, agent.policy) = Optimisers.update!(agent.opt_state, (agent.oracle, agent.policy), (gs[1], gs[2]))
     end
 end
 

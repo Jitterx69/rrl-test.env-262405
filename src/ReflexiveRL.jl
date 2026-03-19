@@ -5,8 +5,12 @@ include("core/interfaces.jl")
 using .Interfaces
 include("utils/MathUtils.jl")
 using .MathUtils
+include("utils/measurement_utils.jl")
+using .MeasurementUtils
+
 export AbstractReflexiveEnv, AbstractReflexiveAgent
-export reset!, step!, reward, observe, compute_returns
+export reset!, step!, reward, observe, compute_returns, compute_advantages
+export reflexive_consistency_error, feedback_sensitivity
 
 # 2. Environment Tiers
 include("environments/base.jl")

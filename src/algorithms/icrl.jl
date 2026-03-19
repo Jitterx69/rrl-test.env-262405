@@ -10,13 +10,20 @@ mutable struct ICRLAgent <: AbstractReflexiveAgent
     policy::GaussianPolicy
     opt_state
     beta::Float32
+    ICRLAgent(o, p, ost, b) = new(o, p, ost, Float32(b))
 end
 
+# 1. New API
 function ICRLAgent(state_dim::Int, out_dim::Int=1; lr=1e-4, beta=0.01f0)
     o = ReflexiveOracle(state_dim, out_dim)
     p = GaussianPolicy(state_dim + out_dim, out_dim)
-    ost = Optimisers.setup(Optimisers.Adam(lr), (o, p))
-    ICRLAgent(o, p, ost, Float32(beta))
+    return ICRLAgent(o, p, lr, beta)
+end
+
+# 2. Legacy API
+function ICRLAgent(o::ReflexiveOracle, p::GaussianPolicy, lr::Real=1e-4; beta=0.01f0)
+    ost = Optimisers.setup(Optimisers.OptimiserChain(Optimisers.ClipGrad(1.0f0), Optimisers.Adam(lr)), (o, p))
+    return ICRLAgent(o, p, ost, beta)
 end
 
 function update_icrl!(agent::ICRLAgent, batch)
@@ -33,9 +40,7 @@ function update_icrl!(agent::ICRLAgent, batch)
         loss / length(batch)
     end
     if gs[1] !== nothing && gs[2] !== nothing
-        g1 = Optimisers.clip(gs[1], 1.0f0)
-        g2 = Optimisers.clip(gs[2], 1.0f0)
-        agent.opt_state, (agent.oracle, agent.policy) = Optimisers.update!(agent.opt_state, (agent.oracle, agent.policy), (g1, g2))
+        agent.opt_state, (agent.oracle, agent.policy) = Optimisers.update!(agent.opt_state, (agent.oracle, agent.policy), (gs[1], gs[2]))
     end
 end
 
