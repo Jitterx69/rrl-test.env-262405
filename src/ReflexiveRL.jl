@@ -30,10 +30,15 @@ include("utils/symbolic_distiller.jl")
 using .SymbolicDistiller
 include("utils/proof_verifier.jl")
 using .ProofVerifier
+include("utils/collective.jl")
+using .SuperRadiance
+include("environments/population_env.jl")
+using .PopulationEnv
 
 export randomized_jacobian_svd, apply_mixed!, HessianFreeOptimizer
 export compute_persistence_0d, estimate_topology_pressure
 export distill_lyapunov, verify_lyapunov_conditions, evaluate_expression
+export CoherentSpectralLayer, compute_population_entropy, MarketPopulationEnv
 
 # 2. Environment Tiers
 include("environments/base.jl")
