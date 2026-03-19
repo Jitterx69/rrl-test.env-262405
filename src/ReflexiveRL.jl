@@ -9,12 +9,15 @@ include("utils/measurement_utils.jl")
 using .MeasurementUtils
 include("utils/stability_utils.jl")
 using .StabilityUtils
+include("utils/accelerator.jl")
+using .Accelerator
 
 export AbstractReflexiveEnv, AbstractReflexiveAgent
 export reset!, step!, reward, observe, compute_returns, compute_advantages
 export reflexive_consistency_error, feedback_sensitivity
 export QuadraticLyapunov, LyapunovDrift, ControlBarrier
 export NeuralLyapunov, CBFSafetyFilter
+export fast_spectral_radius, batch_jvp
 
 # 2. Environment Tiers
 include("environments/base.jl")
