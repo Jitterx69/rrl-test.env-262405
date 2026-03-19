@@ -22,15 +22,19 @@ function Interfaces.reset!(env::Tier1Env)
 end
 
 function Interfaces.step!(env::Tier1Env, action, r_pred)
+    # Handle both scalar and vector inputs for robustness
+    a_val = action isa AbstractVector ? Float32(action[1]) : Float32(action)
+    rp_val = r_pred isa AbstractVector ? Float32(r_pred[1]) : Float32(r_pred)
+    
     noise = env.noise_std * randn(Float32)
-    # Dynamics with saturation guard to prevent infinite divergence
-    next_s = env.state + Float32(action) - env.alpha * Float32(r_pred) + noise
-    env.state = clamp(next_s, -10.0f0, 10.0f0) # High-end stability guard
+    next_s = env.state + a_val - env.alpha * rp_val + noise
+    env.state = clamp(next_s, -10.0f0, 10.0f0) 
     return env.state
 end
 
 function Interfaces.reward(env::Tier1Env, state, action)
-    return - sum((state .- env.target).^2) - 0.1f0 * sum(action.^2)
+    a_val = action isa AbstractVector ? Float32(action[1]) : Float32(action)
+    return - sum((state .- env.target).^2) - 0.1f0 * sum(a_val.^2)
 end
 
 end # module

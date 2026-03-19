@@ -35,8 +35,10 @@ function update_fprl!(agent::FPRLAgent, batch, env)
             mv, sv = p(vcat(sc, rp))
             lp = -0.5 * sum((ac .- mv).^2 ./ sv.^2) - sum(log.(sv))
             l_r -= lp * ret
-            sp = sc .+ mv .- Float32(env.alpha) .* rp[1]
-            l_f += sum((sc .- sp).^2)
+            # Fixed point proximity: || s - (s + a - alpha * rho) || = || a - alpha * rho ||
+            # Or simplified here to || s - s_next_pred ||
+            sp_pred = sc .+ mv .- Float32(env.alpha) .* rp
+            l_f += sum((sc .- sp_pred).^2)
         end
         (l_r + agent.lambda_fp * l_f) / length(batch)
     end

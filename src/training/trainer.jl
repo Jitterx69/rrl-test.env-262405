@@ -36,28 +36,38 @@ function train!(trainer::ReflexiveTrainer)
         ep_sensitivity = 0.0f0
         
         for t in 1:steps
-            sv = s isa Vector ? s : [Float32(s)]
-            # Oracle prediction (rho)
+            # Ensure s is a vector for oracle/policy
+            sv = s isa AbstractVector ? Float32.(s) : [Float32(s)]
+            
+            # Oracle prediction (rho) - multidimensional aware
             rp_vec = trainer.agent.oracle(sv)
-            rp = rp_vec[1]
             
             # Policy input is concat of state and prediction
-            pin = vcat(sv, [Float32(rp)])
+            pin = vcat(sv, Float32.(rp_vec))
             rv = trainer.agent.policy(pin)
             mv = rv[1]; svv = rv[2]
-            a = mv[1] + svv[1] * randn(Float32)
             
-            # Endogenous transition
-            sn = step!(trainer.env, a, rp)
+            # Sample multidimensional action
+            a = mv .+ svv .* randn(Float32, length(mv))
+            
+            # Endogenous transition (step! handles scalar or vector)
+            # Use rp_vec[1] for single-alpha environments, or full vector if env expects it.
+            # Our current step! methods take a scalar rp or first element.
+            rp_pass = length(rp_vec) == 1 ? rp_vec[1] : rp_vec
+            sn = step!(trainer.env, a, rp_pass)
             r = reward(trainer.env, sn, a)
             
             # Record advanced metrics
             ep_reward += r
-            sn_vec = sn isa Vector ? sn : [Float32(sn)]
+            sn_vec = sn isa AbstractVector ? Float32.(sn) : [Float32(sn)]
             ep_consistency += reflexive_consistency_error(sv, sn_vec)
-            ep_sensitivity += feedback_sensitivity(trainer.env, sv, a, rp)
             
-            push!(batch, (sv, [Float32(a)], [Float32(rp)], sn_vec, Float32(r), 0.0f0))
+            # Sensitivity calculation
+            # Note: feedback_sensitivity currently assumes scalar alpha/rp in most impl.
+            # We'll pass the first element to match current measurement_utils.jl impl if needed.
+            ep_sensitivity += feedback_sensitivity(trainer.env, sv, a, rp_vec[1])
+            
+            push!(batch, (sv, Float32.(a), Float32.(rp_vec), sn_vec, Float32(r), 0.0f0))
             s = sn
         end
         
@@ -73,12 +83,18 @@ function train!(trainer::ReflexiveTrainer)
         end
         
         # Dispatch updates based on agent type
-        if trainer.agent isa Main.ReflexiveRL.EGPAgent
+        # Use full module paths or type checks that are robust to module boundaries
+        atype = string(typeof(trainer.agent))
+        if occursin("EGPAgent", atype)
             Main.ReflexiveRL.update_egp!(trainer.agent, batch, trainer.env)
-        elseif trainer.agent isa Main.ReflexiveRL.FPRLAgent
+        elseif occursin("FPRLAgent", atype)
             Main.ReflexiveRL.update_fprl!(trainer.agent, batch, trainer.env)
-        elseif trainer.agent isa Main.ReflexiveRL.PPOAgent
+        elseif occursin("PPOAgent", atype)
             Main.ReflexiveRL.update_ppo!(trainer.agent, batch)
+        elseif occursin("SACAgent", atype)
+            Main.ReflexiveRL.update_sac!(trainer.agent, batch)
+        elseif occursin("ICRLAgent", atype)
+            Main.ReflexiveRL.update_icrl!(trainer.agent, batch)
         end
         
         if ep % 10 == 0

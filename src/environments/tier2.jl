@@ -22,14 +22,19 @@ function Interfaces.reset!(env::Tier2Env)
 end
 
 function Interfaces.step!(env::Tier2Env, action, r_pred)
+    # Handle scalar or vector inputs
+    a_val = action isa AbstractVector ? Float32(action[1]) : Float32(action)
+    rp_val = r_pred isa AbstractVector ? Float32(r_pred[1]) : Float32(r_pred)
+    
     noise = env.noise_std * randn(Float32)
-    new_s = env.state + tanh(Float32(action)) - env.alpha * Float32(r_pred) + noise
-    env.state = clamp(new_s, -100.0f0, 100.0f0) # Stability Guard
+    new_s = env.state + tanh(a_val) - env.alpha * rp_val + noise
+    env.state = clamp(new_s, -100.0f0, 100.0f0) 
     return env.state
 end
 
 function Interfaces.reward(env::Tier2Env, state, action)
-    return - sum((state .- env.target).^2) - 0.05f0 * sum(action.^2)
+    a_val = action isa AbstractVector ? Float32(action[1]) : Float32(action)
+    return - sum((state .- env.target).^2) - 0.05f0 * sum(a_val.^2)
 end
 
 end # module
