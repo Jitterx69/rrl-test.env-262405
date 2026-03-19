@@ -18,8 +18,8 @@ end
 
 function (o::ReflexiveOracle)(x)
     x_input = x isa Number ? [Float32(x)] : x
-    # Ensure 2D for consistent Flux/Spectral behavior
-    x_2d = reshape(x_input, :, 1) # Reshape to (dim, 1) if vector or scalar
+    # Ensure 2D (Features, Batch) without breaking existing batch size
+    x_2d = ndims(x_input) == 1 ? reshape(x_input, :, 1) : x_input
     return o.model(x_2d)
 end
 
@@ -49,7 +49,7 @@ end
 
 function (m::SpectralOracle)(x)
     x_input = x isa Number ? [Float32(x)] : x
-    x_2d = reshape(x_input, :, size(x_input, 2))
+    x_2d = ndims(x_input) == 1 ? reshape(x_input, :, 1) : x_input
     return m.model(x_2d)
 end
 
@@ -81,7 +81,7 @@ Flux.@layer GatedSpectralOracle
 
 function (m::GatedSpectralOracle)(x)
     x_input = x isa Number ? [Float32(x)] : x
-    x_2d = reshape(x_input, :, size(x_input, 2))
+    x_2d = ndims(x_input) == 1 ? reshape(x_input, :, 1) : x_input
     return m.model(x_2d)
 end
 
@@ -103,7 +103,7 @@ end
 
 function (p::GaussianPolicy)(x)
     x_input = x isa Number ? [Float32(x)] : x
-    x_2d = reshape(x_input, :, size(x_input, 2))
+    x_2d = ndims(x_input) == 1 ? reshape(x_input, :, 1) : x_input
     mv_out = p.mu_net(x_2d)
     # Clip log_sigma to prevent NaN in exp
     sv_out = exp.(clamp.(p.log_sigma, -5.0f0, 2.0f0))

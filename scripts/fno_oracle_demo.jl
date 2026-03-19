@@ -64,11 +64,25 @@ catch e
     @warn "FNOAgent update encounterd an issue (Adjoint related): " e
 end
 
-# 5. Visualizing the Gated Advantage (SVG)
-p = plot(obs_complex[1, :], label="State (Complex)", title="Gated Fourier Unit (GFU) Performance", lw=1.5, color=:black)
-plot!(y_fno[1, :], label="Standard FNO (Low-Pass Only)", alpha=0.6, ls=:dash)
-plot!(y_gated[1, :], label="Gated FNO+ (Global + Local)", alpha=0.8, color=:red, lw=2)
-savefig("experiments/plots/fno_plus_performance.svg")
+# 5. Visualizing Spectral Filtering (Concept)
+# For this section, we'll use a simpler signal to highlight filtering
+obs_high = generate_complex_signal(100, 0.01) # Re-using for simplicity, could be different
+y_fno_batch = fno_oracle(obs_high) # Assuming fno_oracle is representative
+
+p = plot(obs_high[1, :], label="State (Spatial/Time)", title="FNO Spectral Feature Extraction", lw=2)
+plot!(y_fno_batch[1, :], label="FNO Filtered Activation", alpha=0.7)
+savefig("experiments/plots/fno_prototype_signals.svg")
+
+# 6. 3D HTML Manifold: Spectral Weight Magnitude
+println(">>> Generating 3D Spectral Manifold...")
+using PlotlyJS
+W_abs = abs.(agent.oracle.model[2].spectral.weights[:, :, 1])'
+p3d = PlotlyJS.plot(PlotlyJS.surface(z=W_abs, colorscale="Viridis"),
+                    Layout(title="FNO Spectral Weight Manifold (3D)",
+                           scene=attr(xaxis_title="Fourier Modes", 
+                                      yaxis_title="Hidden Channels", 
+                                      zaxis_title="Magnitude")))
+PlotlyJS.savefig(p3d, "experiments/plots/fno_spectral_3d.html")
 
 println(">>> FNO+ Expansion Demo Complete!")
 println("Check experiments/plots/fno_plus_performance.svg for visual verification.")
