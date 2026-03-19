@@ -72,7 +72,7 @@ end
 # 5. Visualizing Spectral Filtering (Concept)
 p = plot(obs_high[1, :], label="State (Spatial/Time)", title="FNO Spectral Feature Extraction", lw=2)
 plot!(y_fno_batch[1, :], label="FNO Filtered Activation", alpha=0.7)
-savefig("experiments/plots/fno_prototype_signals.png")
+savefig("experiments/plots/fno_prototype_signals.svg")
 
 println(">>> FNO Prototype Demo Complete!")
-println("Check experiments/plots/fno_prototype_signals.png for visual verification.")
+println("Check experiments/plots/fno_prototype_signals.svg for visual verification.")
