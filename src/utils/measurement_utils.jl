@@ -1,38 +1,35 @@
 module MeasurementUtils
 
+using ..Interfaces
 using LinearAlgebra, Statistics
 
-export reflexive_consistency_error, feedback_sensitivity, aggregate_sweep_metrics
+export reflexive_consistency_error, feedback_sensitivity
 
 """
-    reflexive_consistency_error(s_t, s_t_next)
-Calculates the Euclidean distance between successive states as a proxy 
-for the reflexive operator residual ||s - Phi(s)||.
+    reflexive_consistency_error(s_curr, s_next)
+Calculates the Mean Squared Error between successive states.
 """
-function reflexive_consistency_error(s_t, s_t_next)
-    return norm(s_t .- s_t_next)
+function reflexive_consistency_error(s_curr, s_next)
+    return mean((s_curr .- s_next).^2)
 end
 
 """
-    feedback_sensitivity(env, s, a, r_p)
-Approximates the influence of the predictive signal on the environment 
-transition: Delta s = f(s, a(r_p), r_p) - f(s, a(0), 0).
+    feedback_sensitivity(env, state, action, r_pred)
+Numerical approximation of the feedback gain dPhi/dr_p.
 """
-function feedback_sensitivity(env, s, a, r_p)
-    # This assumes we can query the environment or simulate the transition
-    # For a simple scalar environment like Tier 1:
-    # Delta s = (s + a - alpha*r_p) - (s + a - alpha*0) = -alpha * r_p
-    # In general, we'd need to simulate both pathways if possible.
-    return abs(env.alpha * r_p) 
-end
-
-"""
-    aggregate_sweep_metrics(results_df)
-Aggregates metrics across seeds and alpha points to identify stability regimes.
-"""
-function aggregate_sweep_metrics(results; groupby_cols=[:alpha, :algo])
-    # Placeholder for more complex statistical analysis
-    return results
+function feedback_sensitivity(env, state, action, r_pred)
+    # Using the explicit Interfaces module path for robustness
+    # This prevents any ambiguity with local function names
+    eps = 1.0f-4
+    
+    # Create local copies to avoid mutations during measurement
+    e1 = deepcopy(env)
+    e0 = deepcopy(env)
+    
+    s1 = Interfaces.step!(e1, action, r_pred + eps)
+    s0 = Interfaces.step!(e0, action, r_pred)
+    
+    return norm(s1 .- s0) / eps
 end
 
 end # module
