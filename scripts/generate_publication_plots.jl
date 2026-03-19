@@ -42,8 +42,8 @@ function plot_ablation(tier)
         summary = combine(groupby(df, :condition), :reward => mean => :m, :reward => std => :s)
         @df summary bar!(:condition, :m, yerr=:s, alpha=0.3, color=:grey, label="Mean ± Std")
         
-        savefig(p, joinpath(PLOT_DIR, "tier$(tier)_ablation.png"))
-        println("Saved: tier$(tier)_ablation.png")
+        savefig(p, joinpath(PLOT_DIR, "tier$(tier)_ablation.svg"))
+        println("Saved: tier$(tier)_ablation.svg")
     end
 end
 
@@ -64,8 +64,8 @@ function plot_phase_transitions_2d(tier)
             sub = filter(row -> row.regime == r, df)
             scatter!(sub.alpha, sub.entropy, label=r, color=get(colors, r, :grey), markersize=4)
         end
-        savefig(p, joinpath(PLOT_DIR, "tier$(tier)_phase_transition_2d.png"))
-        println("Saved: tier$(tier)_phase_transition_2d.png")
+        savefig(p, joinpath(PLOT_DIR, "tier$(tier)_phase_transition_2d.svg"))
+        println("Saved: tier$(tier)_phase_transition_2d.svg")
     end
 end
 
@@ -89,8 +89,11 @@ function plot_stability_manifold_3d()
             colorbar_title="Stability Residual"
         )
         
-        savefig(p, joinpath(PLOT_DIR, "stability_manifold_3d.png"))
-        println("Saved: stability_manifold_3d.png")
+        # Use .gib extension as requested (PDF-based vector projection for 3D accuracy)
+        tmp_path = joinpath(PLOT_DIR, "stability_manifold_3d.pdf")
+        savefig(p, tmp_path)
+        mv(tmp_path, joinpath(PLOT_DIR, "stability_manifold_3d.gib"), force=true)
+        println("Saved: stability_manifold_3d.gib")
     end
 end
 
@@ -118,8 +121,11 @@ function plot_sensitivity_surface_3d()
             label=""
         )
         
-        savefig(p, joinpath(PLOT_DIR, "sensitivity_surface_3d.png"))
-        println("Saved: sensitivity_surface_3d.png")
+        # Use .gib extension as requested (PDF-based vector projection for 3D accuracy)
+        tmp_path = joinpath(PLOT_DIR, "sensitivity_surface_3d.pdf")
+        savefig(p, tmp_path)
+        mv(tmp_path, joinpath(PLOT_DIR, "sensitivity_surface_3d.gib"), force=true)
+        println("Saved: sensitivity_surface_3d.gib")
     end
 end
 
