@@ -1,32 +1,21 @@
-# Publication Plot Generation Script (3D Supported)
-# Transforms experiment CSVs into research-grade 2D and 3D figures.
+# Publication Plot Generation Script (Hybrid Backends)
+# GR for 2D Vector (SVG) | Plotly for 3D Interactive (HTML)
 
 using Pkg; Pkg.activate(".")
 using Plots, StatsPlots, DataFrames, CSV, Measures, Statistics
-
-# Set publication theme
-theme(:vibrant)
-default(
-    fontfamily="serif", 
-    guidefontsize=12, 
-    tickfontsize=10, 
-    legendfontsize=10, 
-    margin=5mm,
-    thickness_scaling=1.1,
-    grid=true
-)
 
 const RESULTS_DIR = "experiments/results/processed"
 const PLOT_DIR = "experiments/plots"
 mkpath(PLOT_DIR)
 
-println(">>> Generating Publication Plots Library...")
+println(">>> Generating Publication Plots Library (Hybrid Backends)...")
 
 # ---------------------------------------------------------
-# 1. Ablation Study Plots (2D)
+# 1. Ablation Study Plots (Vector SVG via GR)
 # ---------------------------------------------------------
 
 function plot_ablation(tier)
+    gr() # Force GR for vector support
     path = joinpath(RESULTS_DIR, tier == 1 ? "ablation_study.csv" : "ablation_study_tier$(tier).csv")
     if isfile(path)
         df = CSV.read(path, DataFrame)
@@ -38,20 +27,20 @@ function plot_ablation(tier)
             marker=(:circle, 4, 0.6),
             jitter=0.2
         )
-        # Add summary bars
         summary = combine(groupby(df, :condition), :reward => mean => :m, :reward => std => :s)
         @df summary bar!(:condition, :m, yerr=:s, alpha=0.3, color=:grey, label="Mean ± Std")
         
         savefig(p, joinpath(PLOT_DIR, "tier$(tier)_ablation.svg"))
-        println("Saved: tier$(tier)_ablation.svg")
+        println("Saved: tier$(tier)_ablation.svg (GR)")
     end
 end
 
 # ---------------------------------------------------------
-# 2. Phase Transition Plots (2D & 3D)
+# 2. Phase Transition Plots (2D SVG via GR)
 # ---------------------------------------------------------
 
 function plot_phase_transitions_2d(tier)
+    gr() # Force GR
     path = joinpath(RESULTS_DIR, tier == 1 ? "phase_transitions.csv" : "phase_transitions_tier$(tier).csv")
     if isfile(path)
         df = CSV.read(path, DataFrame)
@@ -65,47 +54,43 @@ function plot_phase_transitions_2d(tier)
             scatter!(sub.alpha, sub.entropy, label=r, color=get(colors, r, :grey), markersize=4)
         end
         savefig(p, joinpath(PLOT_DIR, "tier$(tier)_phase_transition_2d.svg"))
-        println("Saved: tier$(tier)_phase_transition_2d.svg")
+        println("Saved: tier$(tier)_phase_transition_2d.svg (GR)")
     end
 end
 
+# ---------------------------------------------------------
+# 3. 3D Interactive Plots (HTML via Plotly)
+# ---------------------------------------------------------
+
 function plot_stability_manifold_3d()
-    # Combine Tier 1 and Tier 3 data to show the dimensional stability boundary
+    plotly() # Switch to Plotly for interactivity
     p1 = joinpath(RESULTS_DIR, "phase_transitions.csv")
     p3 = joinpath(RESULTS_DIR, "phase_transitions_tier3.csv")
     
     if isfile(p1) && isfile(p3)
         df1 = CSV.read(p1, DataFrame); df1.dim .= 1
-        df3 = CSV.read(p3, DataFrame); df3.dim .= 3 # Dimensional complexity marker
+        df3 = CSV.read(p3, DataFrame); df3.dim .= 3 
         df = vcat(df1, df3, cols=:intersect)
         
         p = scatter3d(df.alpha, df.dim, df.entropy,
             marker_z=df.entropy,
             xlabel="Alpha (α)", ylabel="Env Complexity (Tier)", zlabel="Variance",
-            title="3D Stability Manifold: Dimensional Scaling",
+            title="3D Stability Manifold (Interactive)",
             camera=(45, 30),
             markersize=5,
-            color=:turbo,
-            colorbar_title="Stability Residual"
+            color=:turbo
         )
         
-        # Use .gib extension as requested (PDF-based vector projection for 3D accuracy)
-        tmp_path = joinpath(PLOT_DIR, "stability_manifold_3d.pdf")
-        savefig(p, tmp_path)
-        mv(tmp_path, joinpath(PLOT_DIR, "stability_manifold_3d.gib"), force=true)
-        println("Saved: stability_manifold_3d.gib")
+        savefig(p, joinpath(PLOT_DIR, "stability_manifold_3d.html"))
+        println("Saved: stability_manifold_3d.html (Plotly)")
     end
 end
 
-# ---------------------------------------------------------
-# 3. Sensitivity Surface (3D)
-# ---------------------------------------------------------
-
 function plot_sensitivity_surface_3d()
+    plotly() # Switch to Plotly
     path = joinpath(RESULTS_DIR, "alpha_sensitivity_sweep.csv")
     if isfile(path)
         df = CSV.read(path, DataFrame)
-        # Unique algos as Y-axis indices
         algos = unique(df.algo)
         algo_map = Dict(a => i for (i, a) in enumerate(algos))
         df.algo_idx = [algo_map[a] for a in df.algo]
@@ -114,18 +99,15 @@ function plot_sensitivity_surface_3d()
             marker_z=df.final_reward,
             xlabel="Alpha (α)", ylabel="Algorithm Index", zlabel="Final Reward",
             yticks=(1:length(algos), algos),
-            title="3D Sensitivity Surface: Algo vs Coupling",
+            title="3D Sensitivity Surface (Interactive)",
             camera=(30, 45),
             color=:plasma,
             markersize=4,
             label=""
         )
         
-        # Use .gib extension as requested (PDF-based vector projection for 3D accuracy)
-        tmp_path = joinpath(PLOT_DIR, "sensitivity_surface_3d.pdf")
-        savefig(p, tmp_path)
-        mv(tmp_path, joinpath(PLOT_DIR, "sensitivity_surface_3d.gib"), force=true)
-        println("Saved: sensitivity_surface_3d.gib")
+        savefig(p, joinpath(PLOT_DIR, "sensitivity_surface_3d.html"))
+        println("Saved: sensitivity_surface_3d.html (Plotly)")
     end
 end
 
