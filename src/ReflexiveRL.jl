@@ -42,7 +42,15 @@ using .FNO
 include("algorithms/lac.jl")
 using .LAC
 include("algorithms/neural_lac.jl")
-using .NeuralLAC
+using .NeuralLAC # Added
+include("algorithms/adversarial.jl")
+include("algorithms/holographic_deception.jl")
+include("algorithms/sigint.jl")
+include("environments/competitive.jl")
+
+using .EGP, .FPRL, .NeuralLAC, .Adversarial, .HolographicDeception, .SIGINT, .Competitive
+export EGPAgent, FPRLAgent, NeuralLACAgent, AdversarialReflexiveAgent
+export HolographicDeceiver, SIGINTAgent, CompetitiveEnv, ElectronicWarfareEnv
 
 export EGPAgent, update_egp!
 export FPRLAgent, update_fprl!
@@ -52,6 +60,8 @@ export ICRLAgent, update_icrl!
 export FNOAgent, update_fno!
 export LACAgent, update_lac!
 export NeuralLACAgent, update_neural_lac!
+export AdversarialReflexiveAgent, update_adversarial!
+export CompetitiveEnv
 
 # 5. Training Engine
 include("training/Trainer.jl")
