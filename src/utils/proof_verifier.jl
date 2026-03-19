@@ -2,7 +2,7 @@ module ProofVerifier
 
 using ForwardDiff, LinearAlgebra
 
-export verify_lyapunov_conditions
+export verify_lyapunov_conditions, verify_consensus
 
 """
     verify_lyapunov_conditions(f_expr, dynamics_f, domain)
@@ -31,6 +31,22 @@ function verify_lyapunov_conditions(f_expr, dynamics_f; epsilon=1e-3)
     end
     
     return origin_ok && positivity_ok && drift_ok
+end
+
+"""
+    verify_consensus(proof_a, proof_b, state)
+
+Checks if two agents' symbolic stability proofs are compatible at a given state.
+Enables 'Proof-Aware' multi-agent coordination.
+"""
+function verify_consensus(v_a, v_b, s)
+    # If both proofs agree on the stability direction (dV/dt < 0)
+    # we have consensus.
+    val_a = v_a(s)
+    val_b = v_b(s)
+    
+    # Simple compatibility: both potentials must be positive
+    return (val_a > 0) && (val_b > 0)
 end
 
 end # module

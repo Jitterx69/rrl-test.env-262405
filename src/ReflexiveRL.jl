@@ -39,6 +39,7 @@ export randomized_jacobian_svd, apply_mixed!, HessianFreeOptimizer
 export compute_persistence_0d, estimate_topology_pressure
 export distill_lyapunov, verify_lyapunov_conditions, evaluate_expression
 export CoherentSpectralLayer, compute_population_entropy, MarketPopulationEnv
+export topological_loss, verify_consensus, critical_slowing_index
 
 # 2. Environment Tiers
 include("environments/base.jl")

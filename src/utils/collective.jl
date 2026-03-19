@@ -2,7 +2,7 @@ module SuperRadiance
 
 using LinearAlgebra, Statistics, FFTW
 
-export CoherentSpectralLayer, compute_population_entropy
+export CoherentSpectralLayer, compute_population_entropy, critical_slowing_index
 
 """
     CoherentSpectralLayer(N; bandwidth=0.1)
@@ -38,6 +38,20 @@ function compute_population_entropy(signals)
     p = counts ./ (sum(counts) + 1e-8)
     entropy = -sum(p .* log2.(p .+ 1e-8))
     return Float32(entropy)
+end
+
+"""
+    critical_slowing_index(history)
+
+Detects 'Critical Slowing Down' (CSD) by measuring temporal autocorrelation.
+High CSD indicates the population is approaching a tipping point (Super-radiance).
+"""
+function critical_slowing_index(history)
+    if length(history) < 10 return 0.0f0 end
+    # Temporal variance recovery proxy
+    v = var(history)
+    ac = mean(history[1:end-1] .* history[2:end]) / (v + 1e-6)
+    return Float32(abs(ac))
 end
 
 end # module

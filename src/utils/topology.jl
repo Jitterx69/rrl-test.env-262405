@@ -2,7 +2,7 @@ module TopologicalAnalysis
 
 using LinearAlgebra, Statistics
 
-export compute_persistence_0d, estimate_topology_pressure
+export compute_persistence_0d, estimate_topology_pressure, topological_loss
 
 """
     compute_persistence_0d(points)
@@ -65,6 +65,19 @@ function estimate_topology_pressure(states)
     # Coherent rotation in state space indicates a cycle
     pressure = mean(abs.(accels)) / (mean(abs.(diffs)) + 1f-6)
     return Float32(pressure)
+end
+
+"""
+    topological_loss(points; lambda=0.1)
+
+A differentiable surrogate for H1 persistence (Betti-1 loss).
+Minimizing this regularizes the state manifold to prevent chaotic loops.
+"""
+function topological_loss(points; lambda=0.1f0)
+    # Penalize the 'tension' or winding of the point cloud
+    # Research proxy: variance of local curvature
+    pressure = estimate_topology_pressure(points)
+    return lambda * pressure^2
 end
 
 end # module
