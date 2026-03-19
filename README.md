@@ -162,7 +162,22 @@ julia --project -e 'using Pkg; Pkg.instantiate()'
 
 ---
 
-## Future Directions
+## 🚀 Future Research & Roadmap
 
-- Explicit operator-based implementations using Fourier Neural Operators.
-- Stability-constrained optimization using Lyapunov-based barrier functions.
+The current framework establishes the foundation for reflexive stabilization. Future iterations will focus on:
+
+### 1. Neural Operator Transitions
+- **Fourier Neural Operators (FNO)**: Modeling the transition function $f$ as a discretization-invariant operator to handle infinite-dimensional state spaces.
+- **DeepONets**: Enabling the agent to learn the mapping from prediction functions to transition kernels in real-time.
+
+### 2. Formal Stability Guarantees
+- **Lyapunov-Barrier Functions**: Integrating Control Barrier Functions (CBF) into the PPO/SAC loss to provide formal guarantees against system divergence.
+- **Spectral Radius Regularization**: Implicitly constrained training through spectral normalization of the reflexive oracle.
+
+### 3. Information-Warfare Paradigms
+- **Competitive Reflexivity**: Expanding Tier 2/3 into zero-sum environments where agents optimize their own stability while inducing chaos in competitors.
+- **Adversarial Oracles**: Training agents to generate "deceptive" signals to manipulate the environment's response.
+
+### 4. Large-Scale Infrastructure
+- **TPU-Accelerated Jacobians**: Parallelizing the MeasurementUtils for $N > 100$ agents.
+- **Dynamic Meta-Reflexivity**: Autonomously tuning $\alpha$ and $\beta_{stab}$ via hyper-gradients.
