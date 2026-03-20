@@ -1,5 +1,7 @@
 module ReflexiveRL
 
+using Printf
+
 # 1. Base Interfaces & Utils
 include("core/interfaces.jl")
 using .Interfaces
@@ -38,8 +40,12 @@ using .PopulationEnv
 export randomized_jacobian_svd, apply_mixed!, HessianFreeOptimizer
 export compute_persistence_0d, estimate_topology_pressure
 export distill_lyapunov, verify_lyapunov_conditions, evaluate_expression
-export CoherentSpectralLayer, compute_population_entropy, MarketPopulationEnv
-export topological_loss, verify_consensus, critical_slowing_index
+export CoherentSpectralLayer, compute_population_entropy, MarketPopulationEnv, consensus_proof
+export topological_loss, verify_consensus, critical_slowing_index, trigger_shock!
+
+include("environments/recon_env.jl")
+using .ReconEnv
+export HolographicReconEnv, trigger_shock!
 
 # 2. Environment Tiers
 include("environments/base.jl")
@@ -87,6 +93,10 @@ export LACAgent, update_lac!
 export NeuralLACAgent, update_neural_lac!
 export AdversarialReflexiveAgent, update_adversarial!
 export CompetitiveEnv
+
+include("algorithms/dynamic_control.jl")
+using .DynamicReflexiveControl
+export AdaptiveCouplingController, update_coupling!
 
 # 5. Training Engine
 include("training/Trainer.jl")

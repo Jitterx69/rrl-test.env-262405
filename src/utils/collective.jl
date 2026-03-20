@@ -1,8 +1,8 @@
 module SuperRadiance
 
-using LinearAlgebra, Statistics, FFTW
+using LinearAlgebra, Statistics, FFTW, Printf
 
-export CoherentSpectralLayer, compute_population_entropy, critical_slowing_index
+export CoherentSpectralLayer, compute_population_entropy, critical_slowing_index, consensus_proof
 
 """
     CoherentSpectralLayer(N; bandwidth=0.1)
@@ -52,6 +52,47 @@ function critical_slowing_index(history)
     v = var(history)
     ac = mean(history[1:end-1] .* history[2:end]) / (v + 1e-6)
     return Float32(abs(ac))
+end
+
+"""
+    consensus_proof(agent_proofs)
+
+Aggregates a list of individual symbolic Lyapunov strings (e.g., "V(s) = 0.48 * s^2")
+into a single 'Global Consensus Proof' by averaging coefficients of matching templates.
+Returns the dominant analytical potential function of the population.
+"""
+function consensus_proof(proof_strings)
+    if isempty(proof_strings) return "V(s) = 0" end
+    
+    # Map of Template -> List of Coeffs
+    registry = Dict{String, Vector{Float32}}()
+    
+    for s in proof_strings
+        m = match(r"V\(s\) = ([\d\.\-]+) \* (.+)", s)
+        if m !== nothing
+            coeff = parse(Float32, m.captures[1])
+            tmpl = m.captures[2]
+            if !haskey(registry, tmpl) registry[tmpl] = [] end
+            push!(registry[tmpl], coeff)
+        end
+    end
+    
+    if isempty(registry) return "V_global(s) = 0" end
+    
+    # Find the most frequent template (Consensus Mode)
+    best_tmpl = ""
+    max_count = 0
+    for (tmpl, coeffs) in registry
+        if length(coeffs) > max_count
+            max_count = length(coeffs)
+            best_tmpl = tmpl
+        end
+    end
+    
+    # Average the coefficients for the consensus template
+    avg_coeff = mean(registry[best_tmpl])
+    
+    return Printf.@sprintf("V_global(s) = %.4f * %s", avg_coeff, best_tmpl)
 end
 
 end # module
