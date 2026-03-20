@@ -97,4 +97,46 @@ Instead of climbing a "Reward Hill," the agent builds a "Potential Valley" and l
 
 ---
 
-[Next Chunk: Holographic Persistence Bottlenecks (HPB) Expansion Pending...]
+## 4. Algorithm: Holographic Persistence Bottlenecks (HPB)
+
+### 4.1 The Theoretical Gap: Signal Spoofing & High-Frequency Noise
+In adversarial signal environments (Electronic Warfare, SIGINT), standard denoising (Fourier, Wavelet) often fails because the 'noise' is designed to mimic the 'signal' spectrum (Holographic Deception). Traditional filters look at magnitude/frequency, but they cannot distinguish between a "Real" causal signal and a "Fake" spoofed mirror that has high spectral overlap.
+
+### 4.2 Mathematical Mechanism: 4D Projective Homology Filtering (PHF)
+HPB treats information not as a sequence of points, but as a **Holographic Volume** in state-time. It maps 1D/2D signal streams into a 4D space where the 4th dimension is **Topological Persistence Lifetime** ($\tau$).
+
+**The PHF Kernel**:
+The algorithm constructs a real-time **Simplicial Complex** from the signal history and computes the **Persistent Homology** ($B_0, B_1, \dots$). The "Bottleneck" is a filter that prunes any signal component whose **Topological Life-span** in $H_1$ (cycles) is below a statistical significance threshold:
+\[
+\text{Signal}_{clean} = \mathcal{G}\left( \text{Signal}_{raw} \mid \frac{\text{Death}}{\text{Birth}} (H_1) > \sigma \right)
+\]
+Where $\mathcal{G}$ is a Gated Fourier Unit. This ensures that only "Persistent Loops" (causal interactions that repeat and survive over time) are passed to the agent, while "Transient Spoofs" (high-magnitude but topologically shallow noise) are choked.
+
+### 4.3 Implementation Pipeline: Real-time Simplicial Squeezing
+1.  **Projective Mapping**: raw state vectors are projected into a redundant 4D manifold using a specialized **Holographic Encoder**.
+2.  **Persistence Scoring**: An $O(n^2 \log n)$ kernel computes the Birth-Death pairs of the 1st homology group ($H_1$).
+3.  **Bottleneck Squeeze**: Components are weighted by their **Persistence Density**, essentially "filtering reality" through its topological resilience.
+4.  **Reconstruction**: The Gated Spectral Unit reconstructs the original signal dimension from the "Topologically Pure" manifold.
+
+### 4.4 Deployment Strategy: Secure Signal Dominance
+- **Target**: Deep-space communications or Quantum-resistant encrypted signal pathways where "Signal integrity" is binary.
+- **Protocol**: HPB enables "Zero-Trust Signaling"—no information is accepted based on its energy/frequency; it is ONLY accepted if it demonstrates a **Topological Lifetime Certificate**.
+
+---
+
+## 5. Summary of the Research Transformation
+The algorithms drafted in this roadmap represent the transition from **Classical RL (Optimization by Error)** to **Evolutionary Intelligence (Stability by Topology)**. 
+
+### Conclusion & Final Roadmap
+| Innovation | Core Thesis | Global Goal |
+| :--- | :--- | :--- |
+| **CEK** | Prediction is Intervention | Causal market/network stability. |
+| **TML** | Resonant Parameter Phase-Lock | Scalability to planetary agent counts. |
+| **SHR** | Homeostasis via Symbolic Distillation | Preventing Goodhart-induced system collapse. |
+| **HPB** | Reality Filtering via Topological Life | Absolute signal integrity in adversarial noise. |
+
+---
+**Development Status**: Theoretical derivations complete. Micro-simulations in Phase I development. Deployment protocols drafted for high-stakes validation environments.
+
+---
+© 2026 Mohit Ranjan. All Rights Reserved. Prepared for Evolutionary AI Submission.
