@@ -39,4 +39,30 @@ Where $\nabla_r \mathcal{T}$ represents how the environment's physics 'bend' in 
 
 ---
 
-[Next Chunk: Topological Manifold Lasing (TML) Expansion Pending...]
+## 2. Algorithm: Topological Manifold "Lasing" (TML)
+
+### 2.1 The Theoretical Gap: The Synchronization Limit ($N \to \infty$)
+Classical Multi-Agent RL (MARL) algorithms such as QMIX or MADDPG scale poorly because they rely on centralized mixing or explicit agent-to-agent communication. In massive systems ($N > 1,000,000$, e.g., smart IoT grids), the communication overhead becomes a bottleneck, and the shared gradient signal collapses into **high-dimensional white noise**, preventing any coherent population-level strategy from emerging.
+
+### 2.2 Mathematical Mechanism: Phase-Locked Parameter Optimization (PLPO)
+TML models the agent population not as a collection of independent optimizers, but as a **Resonant Lasing Medium**. It leverages the **Kuramoto Model** of coupled oscillators to synchronize the weight update process across the manifold.
+
+**The Resilience Gradient ($\Lambda$)**:
+The learning update for an agent $i$ is no longer driven purely by its local error $\nabla \mathcal{L}_i$, but is filtered by the **Global Persistence Signature**:
+\[
+\Delta W_i = \eta \cdot \nabla \mathcal{L}_i \cdot \underbrace{\exp\left( -\kappa \cdot \| \text{Pers}(H_1)_i - \text{Pers}(H_1)_{global} \| \right)}_{\text{Topological Coherence Filter}}
+\]
+Where $\text{Pers}(H_1)$ is the persistence diagram of the 1-cycles (loops) in the local state history. Weights are only updated if the local agent's behavior is "topologically resonant" with the stable patterns of the majority.
+
+### 2.3 Implementation Pipeline: The Global Topology Bus
+1.  **Distributed Persistent Homology**: Each agent computes a low-fidelity **Viterbi-Filtered Persistent Landscape** ($H_0, H_1$).
+2.  **Spectral Aggregation**: A centralized "Topology Bus" uses **Fast Fourier Transforms (FFT)** to aggregate local landscapes into a global "Consensus Waveform."
+3.  **Lasing Update**: The Bus broadcasts a **Phase-Locked signal** that acts as a meta-learning gate for local SGD steps.
+
+### 2.4 Deployment Strategy: Resilient Decentralized Infrastructures
+- **Target**: Autonomous energy grids where millions of devices must synchronize frequency/load without a single point of failure.
+- **Protocol**: TML enables "Isotropic Stabilization"—if a regional black-out occurs, the surviving nodes' topological resonance "pulls" the recovering nodes back into the stable phase, preventing cascading failures via informational "Snap-Back."
+
+---
+
+[Next Chunk: Symbolic Homeostatic Reflexivity (SHR) Expansion Pending...]
